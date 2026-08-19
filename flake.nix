@@ -14,9 +14,10 @@
     noctalia-greeter.url = "github:noctalia-dev/noctalia-greeter";
     noctalia-greeter.inputs.nixpkgs.follows = "nixpkgs";
 
-    # CLI batteries live in their own repo. Local path for now; once pushed:
+    # CLI batteries live in their own repo. Absolute local path for the VM
+    # (a relative path breaks once this flake is fetched via git). Once pushed:
     #   cli.url = "github:<you>/nixos-cli";
-    cli.url = "path:../nixos-cli";
+    cli.url = "path:/home/test/nixos-cli";
   };
 
   outputs = inputs @ { self, nixpkgs, ... }:
