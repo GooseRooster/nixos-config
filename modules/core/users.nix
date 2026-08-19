@@ -16,14 +16,25 @@ in
       default = [ ];
       description = "Supplementary groups for the primary user.";
     };
+
+    initialPassword = lib.mkOption {
+      type = lib.types.nullOr lib.types.str;
+      default = null;
+      description = ''
+        Initial password for the primary user. Only applied while the account
+        has no password set (so `passwd` can change it later). Leave null to
+        set the password imperatively after first boot.
+      '';
+    };
   };
 
   config = {
-    # No password is declared: with users.mutableUsers = true (default) you set
-    # it imperatively after first boot with `sudo passwd <user>`.
     users.users.${cfg.primary} = {
       isNormalUser = true;
       extraGroups = cfg.extraGroups;
+    }
+    // lib.optionalAttrs (cfg.initialPassword != null) {
+      initialPassword = cfg.initialPassword;
     };
   };
 }

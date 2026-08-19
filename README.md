@@ -38,11 +38,18 @@ Users are declared per host via `modules/users.nix`. Set
 `modules.users.primary = "gooze"` (or a per-host name) and the module creates a
 normal user with the groups supplied by the flavor.
 
-No password is declared — with `users.mutableUsers = true` (the default) set it
-imperatively after first boot:
+By default no password is declared — with `users.mutableUsers = true` (the
+default) set it imperatively after first boot:
 
 ```sh
 sudo passwd gooze
+```
+
+For testing (e.g. the VM, where you need to log in before you can `passwd`),
+set a throwaway password that only applies while the account has none:
+
+```nix
+modules.users.initialPassword = "changeme";
 ```
 
 ## Flatpaks
