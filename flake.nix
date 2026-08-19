@@ -14,10 +14,10 @@
     noctalia-greeter.url = "github:noctalia-dev/noctalia-greeter";
     noctalia-greeter.inputs.nixpkgs.follows = "nixpkgs";
 
-    # CLI batteries live in their own repo (a git repo). Local dev ref; once
-    # pushed to GitHub, switch to:
-    #   cli.url = "github:<you>/nixos-cli";
-    cli.url = "git+file:///home/test/nixos-cli";
+    # CLI batteries live in their own repo. Safe to follow our nixpkgs (no
+    # cache pin like noctalia).
+    cli.url = "github:GooseRooster/nixos-cli";
+    cli.inputs.nixpkgs.follows = "nixpkgs";
   };
 
   outputs = inputs @ { self, nixpkgs, ... }:
@@ -30,6 +30,14 @@
         specialArgs = { inherit inputs; };
         modules = [
           ./hosts/vm
+        ];
+      };
+
+      nixosConfigurations.home = lib.nixosSystem {
+        system = "x86_64-linux";
+        specialArgs = { inherit inputs; };
+        modules = [
+          ./hosts/home
         ];
       };
     };

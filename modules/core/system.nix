@@ -10,10 +10,6 @@
 
   networking.networkmanager.enable = true;
 
-  # QEMU/Spice guest integration (this is a VM).
-  services.qemuGuest.enable = true;
-  services.spice-vdagentd.enable = true;
-
   services.printing.enable = true;
 
   environment.systemPackages = with pkgs; [

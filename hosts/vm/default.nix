@@ -8,9 +8,11 @@
 
   networking.hostName = "nixos";
 
-  # Users are managed imperatively (adduser/usermod), not declared here.
-  # Required supplementary groups for a desktop user:
-  #   sudo usermod -aG wheel,networkmanager,video,render,input,audio <user>
+  modules.users.primary = "gooze";
+
+  # QEMU/Spice guest integration (this is a VM).
+  services.qemuGuest.enable = true;
+  services.spice-vdagentd.enable = true;
 
   system.stateVersion = "26.05";
 }

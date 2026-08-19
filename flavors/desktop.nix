@@ -13,7 +13,17 @@
     ../modules/desktop/power.nix
 
     inputs.cli.nixosModules.dev
+    inputs.cli.nixosModules.base-extra
     inputs.cli.nixosModules.ssh
     inputs.cli.nixosModules.podman
+  ];
+
+  modules.users.extraGroups = [
+    "wheel"
+    "networkmanager"
+    "video"
+    "render"
+    "input"
+    "audio"
   ];
 }
