@@ -64,8 +64,14 @@ on a workstation host, just don't import `gaming.nix` (or set
 ## Dotfiles via chezmoi
 
 Noctalia (`~/.config/noctalia/config.toml`) and Scroll
-(`~/.config/scroll/config`) are managed by chezmoi, not Nix. The Scroll config
-should autostart Noctalia (or rely on its systemd user service).
+(`~/.config/scroll/config`) are managed by chezmoi, not Nix.
+
+Noctalia is launched as a **systemd user service** (bound to
+`graphical-session.target`), not autostarted from the Scroll config. Scroll
+signals session readiness to UWSM via `uwsm finalize` in its system config
+(see `modules/desktop/scroll.nix`); the minimal system default Scroll config
+there has no status bar (Noctalia is the bar) and is overridden by the chezmoi
+config once applied.
 
 ## Apply
 
