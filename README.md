@@ -85,6 +85,10 @@ The sets live in `modules/flatpak/{base,gaming,multimedia}.nix`. To skip gaming
 on a workstation host, just don't import `gaming.nix` (or set
 `modules.flatpak.gaming.enable = false`).
 
+Declarative installs are handled by [nix-flatpak](https://github.com/gmodena/nix-flatpak)
+(nixpkgs removed its own `services.flatpak.packages` option). Application IDs
+are installed from Flathub by default.
+
 ## GNOME Shell extensions
 
 Extensions are installed declaratively in `modules/desktop/gnome-extensions.nix`

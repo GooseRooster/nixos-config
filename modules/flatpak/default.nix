@@ -1,9 +1,13 @@
-{ config, lib, ... }:
+{ config, lib, inputs, ... }:
 
 let
   cfg = config.modules.flatpak;
 in
 {
+  # nixpkgs removed `services.flatpak.packages`; nix-flatpak restores
+  # declarative installs (plain strings are coerced to flathub app IDs).
+  imports = [ inputs.nix-flatpak.nixosModules.nix-flatpak ];
+
   options.modules.flatpak = {
     enable = lib.mkEnableOption "declarative Flatpak management";
 

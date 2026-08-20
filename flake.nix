@@ -9,6 +9,9 @@
     # revision to hit the cache).
     nix-cachyos-kernel.url = "github:xddxdd/nix-cachyos-kernel/release";
 
+    # Declarative flatpak installs (nixpkgs removed services.flatpak.packages).
+    nix-flatpak.url = "github:gmodena/nix-flatpak/?ref=latest";
+
     # CLI batteries live in their own repo. Safe to follow our nixpkgs.
     cli.url = "github:GooseRooster/nixos-cli";
     cli.inputs.nixpkgs.follows = "nixpkgs";
