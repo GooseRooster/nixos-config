@@ -7,6 +7,5 @@
 
   modules.flatpak.multimedia.packages = [
     "com.stremio.Stremio"
-    "io.mpv.Mpv"
   ];
 }
