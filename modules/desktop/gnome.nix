@@ -9,6 +9,10 @@
   services.gnome.core-apps.enable = false;
   services.gnome.games.enable = false;
 
+  # gnome-disks has no Flatpak on Flathub, so it stays from nixpkgs.
+  # (This would otherwise be pulled in by core-apps.)
+  programs.gnome-disks.enable = true;
+
   # Optional sub-services are left at their defaults (enabled):
   #   gnome-remote-desktop, gnome-user-share, rygel, gnome-initial-setup,
   #   gnome-online-accounts, evolution-data-server, dleyna,
