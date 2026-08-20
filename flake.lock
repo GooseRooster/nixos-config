@@ -7,11 +7,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1787162308,
-        "narHash": "sha256-+u+KAzztdoPutK8rJWythkPeh8GFEcoAj9tzsiiP5JU=",
+        "lastModified": 1787250019,
+        "narHash": "sha256-tAd28ROIGTLuR2RmTcf5d9opV63Rmo0KaZ5+MyNmy5Q=",
         "owner": "GooseRooster",
         "repo": "nixos-cli",
-        "rev": "fe0dca20d800f8ba7deb74dc5ed4beae52cb1d91",
+        "rev": "58a63b8c2dd07c1b85b072be03c70c2dce166ef6",
         "type": "github"
       },
       "original": {
