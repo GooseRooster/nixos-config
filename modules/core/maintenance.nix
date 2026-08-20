@@ -21,5 +21,11 @@ in
     # Firmware updates via LVFS (fwupdmgr). NOTE: also available as the
     # org.gnome.Firmware flatpak — this is the underlying daemon it drives.
     services.fwupd.enable = true;
+
+    # Monthly btrfs scrub (no-op on non-btrfs filesystems).
+    services.btrfs.autoScrub = {
+      enable = true;
+      interval = "monthly";
+    };
   };
 }

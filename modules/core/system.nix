@@ -18,5 +18,6 @@
     wget
     curl
     openssh
+    ppp # pppd, for legacy Fortinet/PPTP VPNs
   ];
 }

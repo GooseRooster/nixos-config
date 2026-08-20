@@ -1,0 +1,42 @@
+{ config, lib, pkgs, ... }:
+
+let
+  cfg = config.modules.snapper;
+in
+{
+  options.modules.snapper.enable =
+    lib.mkEnableOption "btrfs snapshots via snapper (for / and /home)";
+
+  config = lib.mkIf cfg.enable {
+    # Snapper requires a `.snapshots` subvolume inside each snapshotted
+    # subvolume, which the nixpkgs module does NOT create for you. Create it
+    # idempotently at activation.
+    #
+    # `/nix` is intentionally NOT snapshotted: Nix generations already provide
+    # store rollback, and snapshotting the store wastes space for no benefit.
+    system.activationScripts.snapper-subvols = lib.stringAfter [ "users" ] ''
+      for sub in "/" "/home"; do
+        if [ ! -e "$sub/.snapshots" ]; then
+          ${pkgs.btrfs-progs}/bin/btrfs subvolume create "$sub/.snapshots"
+        fi
+      done
+    '';
+
+    services.snapper = {
+      snapshotRootOnBoot = true;
+
+      configs = {
+        root = {
+          SUBVOLUME = "/";
+          TIMELINE_CREATE = true;
+          TIMELINE_CLEANUP = true;
+        };
+        home = {
+          SUBVOLUME = "/home";
+          TIMELINE_CREATE = true;
+          TIMELINE_CLEANUP = true;
+        };
+      };
+    };
+  };
+}

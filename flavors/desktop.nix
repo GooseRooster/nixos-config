@@ -7,10 +7,12 @@
     ../modules/desktop/gnome-devtools.nix
     ../modules/desktop/gnome-extensions.nix
     ../modules/desktop/terminal.nix
+    ../modules/desktop/graphics.nix
     ../modules/desktop/portals.nix
     ../modules/desktop/pipewire.nix
     ../modules/desktop/keyring.nix
     ../modules/desktop/power.nix
+    ../modules/desktop/virtualization.nix
 
     inputs.cli.nixosModules.dev
     inputs.cli.nixosModules.base-extra
@@ -25,5 +27,8 @@
     "render"
     "input"
     "audio"
+    "libvirtd"
   ];
+
+  modules.graphics.enable = true;
 }

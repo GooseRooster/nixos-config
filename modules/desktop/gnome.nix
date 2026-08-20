@@ -25,4 +25,11 @@
     orca              # screen reader
     # gnome-bluetooth # uncomment on hosts WITHOUT bluetooth hardware
   ];
+
+  # Emoji + general fallback fonts (GNOME only ships adwaita-fonts by default).
+  # CJK users may also want: noto-fonts-cjk-sans, noto-fonts-cjk-serif.
+  fonts.packages = with pkgs; [
+    noto-fonts-color-emoji
+    noto-fonts
+  ];
 }

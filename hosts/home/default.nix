@@ -8,6 +8,7 @@
     ../../modules/flatpak/gaming.nix
     ../../modules/flatpak/multimedia.nix
     ../../modules/extras/theming.nix
+    ../../modules/extras/tuned.nix
   ];
 
   networking.hostName = "nixos";
@@ -21,8 +22,21 @@
 
   modules.theming.enable = true;
 
+  # Gaming host: 32-bit GL + VA-API/VDPAU extras for Steam/Wine.
+  modules.graphics.gaming = true;
+
+  # TuneD power profiles (incl. a custom "gaming" = latency-performance).
+  modules.tuned.enable = true;
+
+  # btrfs snapshots of / and /home (rollback for data, unlike Nix generations).
+  modules.snapper.enable = true;
+
   # CachyOS kernel tuned for this host's AMD Ryzen 7 7800X3D (Zen 4).
   modules.kernel.cachyosFlavor = "linuxPackages-cachyos-latest-zen4";
+
+  # Stage weekly upgrades in the bootloader (no live switch); reboot to apply.
+  modules.autoUpgrade.enable = true;
+  modules.autoUpgrade.flake = "github:GooseRooster/nixos-config#home";
 
   system.stateVersion = "26.05";
 }
