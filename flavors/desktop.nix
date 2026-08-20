@@ -6,6 +6,7 @@
     ../modules/desktop/gnome.nix
     ../modules/desktop/gnome-devtools.nix
     ../modules/desktop/gnome-extensions.nix
+    ../modules/desktop/terminal.nix
     ../modules/desktop/portals.nix
     ../modules/desktop/pipewire.nix
     ../modules/desktop/keyring.nix
