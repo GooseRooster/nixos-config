@@ -6,11 +6,10 @@
   nix.settings = {
     experimental-features = [ "nix-command" "flakes" ];
 
-    # Noctalia binary cache (pin noctalia to the `cachix` branch and do NOT
-    # set inputs.nixpkgs.follows, or the cache will miss).
-    extra-substituters = [ "https://noctalia.cachix.org" ];
+    # CachyOS kernel binary cache (xddxdd/nix-cachyos-kernel).
+    extra-substituters = [ "https://attic.xuyh0120.win/lantian" ];
     extra-trusted-public-keys = [
-      "noctalia.cachix.org-1:pCOR47nnMEo5thcxNDtzWpOxNFQsBRglJzxWPp3dkU4="
+      "lantian:EeAUQ+W+6r7EtwnmYjeVwx5kOGEBpjlBfPlzGlTNvHc="
     ];
   };
 }

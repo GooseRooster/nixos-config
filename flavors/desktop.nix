@@ -3,10 +3,9 @@
 {
   imports = [
     ./base.nix
-    ../modules/desktop/scroll.nix
-    ../modules/desktop/uwsm.nix
-    ../modules/desktop/noctalia.nix
-    ../modules/desktop/greeter.nix
+    ../modules/desktop/gnome.nix
+    ../modules/desktop/gnome-devtools.nix
+    ../modules/desktop/gnome-extensions.nix
     ../modules/desktop/portals.nix
     ../modules/desktop/pipewire.nix
     ../modules/desktop/keyring.nix

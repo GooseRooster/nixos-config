@@ -1,23 +1,25 @@
 # nixos-config
 
-Flake-based NixOS configuration for a lightweight, Bluefin-like desktop:
+Flake-based NixOS configuration for a Flatpak-first, bluefin-like GNOME desktop:
 
-- **Compositor**: [Scroll](https://github.com/dawsers/scroll) (sway fork, scrolling tiling)
-- **Session manager**: [UWSM](https://github.com/Vladimir-csp/uwsm)
-- **Shell**: [Noctalia v5](https://github.com/noctalia-dev/noctalia) (bar/launcher/notifications/lockscreen/idle)
-- **Greeter**: [Noctalia Greeter](https://github.com/noctalia-dev/noctalia-greeter) (greetd)
-- Portals (wlr/gtk), gnome-keyring, pipewire, power-profiles-daemon, upower,
-  latest kernel + system76-scheduler.
+- **Desktop**: minimal [GNOME](https://www.gnome.org) (GDM, Wayland-only)
+- **Apps**: declarative Flatpaks (see `modules/flatpak/`), GNOME core apps disabled
+- **Shell extensions**: declaratively installed via `pkgs.gnomeExtensions`
+- **Kernel**: [CachyOS](https://github.com/xddxdd/nix-cachyos-kernel) by default,
+  with a per-host fallback to the plain nixpkgs kernel
+- **Hardening**: moderate kernel/sudo/ssh hardening (`modules/core/hardening.nix`)
+- **Maintenance**: automatic GC + store optimisation + fwupd
 
 CLI/dev batteries live in a separate repo ([`nixos-cli`](https://github.com/GooseRooster/nixos-cli))
 and are pulled in as a flake input.
 
 ## Layout
 
-- `hosts/<name>/` — per-machine entrypoint (hostname, user, flatpaks, hardware)
+- `hosts/<name>/` — per-machine entrypoint (hostname, user, flatpaks, kernel, hardware)
 - `flavors/` — high-level combos: `base`, `desktop`, `wsl` (stub)
-- `modules/core/` — cross-flavor system modules (incl. `users.nix`)
-- `modules/desktop/` — desktop-specific modules
+- `modules/core/` — cross-flavor system modules (`system`, `kernel`, `perf`,
+  `nix`, `users`, `hardening`, `maintenance`)
+- `modules/desktop/` — GNOME + audio/portal/keyring/power modules
 - `modules/flatpak/` — declarative flatpaks, split into toggle-able sets
 - `modules/extras/` — optional host extras (theming)
 
@@ -27,10 +29,25 @@ A **host** selects a **flavor** and adds its own machine-specific extras:
 
 - **flavor** = reusable system shape (`base` / `desktop` / `wsl`).
 - **host** = hostname + hardware + user + which extras are enabled (flatpak
-  sets, theming, etc).
+  sets, theming, kernel, etc).
 
 `hosts/vm` and `hosts/home` both use the `desktop` flavor; only `home` enables
 flatpaks/theming.
+
+## Kernel selection
+
+`modules/core/kernel.nix` exposes `modules.kernel.variant` (`cachyos` |
+`latest` | `lts`) and `modules.kernel.cachyosFlavor`. Set per-host:
+
+```nix
+modules.kernel.variant = "latest";                      # plain nixpkgs kernel
+modules.kernel.cachyosFlavor = "linuxPackages-cachyos-latest-zen4"; # tuned build
+```
+
+The CachyOS kernel comes from the `nix-cachyos-kernel` flake input (binary
+cache configured in `modules/core/nix.nix`). When first enabling CachyOS on a
+host, run a rebuild twice so the new substituter takes effect before the kernel
+is fetched.
 
 ## Users are declarative
 
@@ -68,17 +85,19 @@ The sets live in `modules/flatpak/{base,gaming,multimedia}.nix`. To skip gaming
 on a workstation host, just don't import `gaming.nix` (or set
 `modules.flatpak.gaming.enable = false`).
 
+## GNOME Shell extensions
+
+Extensions are installed declaratively in `modules/desktop/gnome-extensions.nix`
+via `pkgs.gnomeExtensions`. They are *enabled* manually with the
+`com.mattjakeman.ExtensionManager` flatpak (or `gnome-extensions enable <uuid>`).
+
+`bazaar-integration` and `gradia-integration` are not listed there — they ship
+inside the `io.github.kolunmi.Bazaar` and `be.alexandervanhee.gradia` flatpaks.
+
 ## Dotfiles via chezmoi
 
-Noctalia (`~/.config/noctalia/config.toml`) and Scroll
-(`~/.config/scroll/config`) are managed by chezmoi, not Nix.
-
-Noctalia is launched as a **systemd user service** (bound to
-`graphical-session.target`), not autostarted from the Scroll config. Scroll
-signals session readiness to UWSM via `uwsm finalize` in its system config
-(see `modules/desktop/scroll.nix`); the minimal system default Scroll config
-there has no status bar (Noctalia is the bar) and is overridden by the chezmoi
-config once applied.
+dconf/GSettings tweaks and GNOME shell preferences (beyond what's set
+declaratively) are managed by chezmoi, not Nix.
 
 ## Apply
 
@@ -117,6 +136,7 @@ nix flake update
 # Update a single input
 nix flake update nixpkgs
 nix flake update cli
+nix flake update nix-cachyos-kernel
 
 # Sanity-check the flake before committing
 nix flake check
@@ -125,9 +145,12 @@ nix flake check
 sudo nixos-generate-config
 #   cp /etc/nixos/hardware-configuration.nix hosts/<name>/hardware-configuration.nix
 
-# Garbage-collect old generations (keep some for rollback safety)
+# Garbage-collect old generations (also runs weekly via modules.core.maintenance)
 sudo nix-collect-garbage -d
 sudo nix-collect-garbage --delete-older-than 30d
+
+# Check for / apply firmware updates (services.fwupd)
+fwupdmgr get-updates
 
 # Set the declarative user's password (first boot)
 sudo passwd gooze

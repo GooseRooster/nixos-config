@@ -15,6 +15,9 @@
 
   # Easy shell access from the host (`ssh gooze@<vm-ip>`) — sidesteps the
   # Boxes TTY-switch problem entirely.
+  # NOTE: hardening disables password auth, so provision an SSH key first
+  # (`ssh-copy-id gooze@<vm-ip>` after setting the password), or temporarily
+  # comment out services.openssh.settings in modules/core/hardening.nix.
   services.openssh.enable = true;
 
   # QEMU/Spice guest integration (this is a VM).
@@ -24,12 +27,12 @@
   # No bluetooth hardware in this VM.
   hardware.bluetooth.enable = false;
 
-  # QEMU/Boxes without GPU acceleration: wlroots needs an explicit opt-in to
-  # software rendering, or scroll fails to init EGL and the session never
-  # comes up. (Merges with the shared extraSessionCommands in scroll.nix.)
-  programs.scroll.extraSessionCommands = ''
-    export WLR_RENDERER_ALLOW_SOFTWARE=1
-  '';
+  # Plain nixpkgs kernel for the VM (faster, no cachyos cache/build needed).
+  # This also exercises the per-flavor kernel fallback path.
+  modules.kernel.variant = "latest";
+
+  # GNOME in Boxes needs 3D acceleration (virtio-gpu / virgl) enabled in the
+  # VM settings, otherwise the session may fail to start.
 
   system.stateVersion = "26.05";
 }

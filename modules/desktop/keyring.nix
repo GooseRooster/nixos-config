@@ -1,13 +1,9 @@
 { config, pkgs, lib, ... }:
 
 {
-  # Secret Service provider (org.freedesktop.secrets).
-  # Also provides the SSH agent (services.gnome.gcr-ssh-agent defaults to on).
-  services.gnome.gnome-keyring.enable = true;
-
-  # Unlock the keyring at login (greeter + TTY).
-  security.pam.services = {
-    greetd.enableGnomeKeyring = true;
-    login.enableGnomeKeyring = true;
-  };
+  # gnome-keyring + gcr-ssh-agent are enabled by GNOME's core-os-services.
+  # GDM's gdm-password substacks `login` and gdm-autologin reads
+  # login.enableGnomeKeyring to inject pam_gnome_keyring.so, so enabling it on
+  # the `login` service unlocks the keyring at both GDM and TTY login.
+  security.pam.services.login.enableGnomeKeyring = true;
 }

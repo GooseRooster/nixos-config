@@ -1,21 +1,15 @@
 {
-  description = "NixOS — lightweight Bluefin-like desktop (Scroll + Noctalia + UWSM)";
+  description = "NixOS — Flatpak-first GNOME desktop + CLI batteries (CachyOS kernel)";
 
   inputs = {
     nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
 
-    scroll.url = "github:Diax170/scroll-flake";
-    scroll.inputs.nixpkgs.follows = "nixpkgs";
+    # Precompiled CachyOS kernels. `release` branch has a binary cache.
+    # Do NOT override its nixpkgs input (the pinned overlay needs the exact
+    # revision to hit the cache).
+    nix-cachyos-kernel.url = "github:xddxdd/nix-cachyos-kernel/release";
 
-    # Pin to the `cachix` branch so pre-built binaries are used.
-    # Do NOT set `inputs.nixpkgs.follows`, or the cache will miss.
-    noctalia.url = "github:noctalia-dev/noctalia/cachix";
-
-    noctalia-greeter.url = "github:noctalia-dev/noctalia-greeter";
-    noctalia-greeter.inputs.nixpkgs.follows = "nixpkgs";
-
-    # CLI batteries live in their own repo. Safe to follow our nixpkgs (no
-    # cache pin like noctalia).
+    # CLI batteries live in their own repo. Safe to follow our nixpkgs.
     cli.url = "github:GooseRooster/nixos-cli";
     cli.inputs.nixpkgs.follows = "nixpkgs";
   };
