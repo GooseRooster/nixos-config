@@ -40,7 +40,6 @@
     "org.gnome.Logs"
     "org.gnome.Loupe"
     "org.gnome.Maps"
-    "org.gnome.Nautilus"
     "org.gnome.NautilusPreviewer"
     "org.gnome.Papers"
     "org.gnome.SimpleScan"

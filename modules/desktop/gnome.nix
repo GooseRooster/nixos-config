@@ -13,6 +13,12 @@
   # (This would otherwise be pulled in by core-apps.)
   programs.gnome-disks.enable = true;
 
+  # Nautilus (Files) + Sushi (previewer): the org.gnome.Nautilus flatpak is
+  # deprecated, so install from nixpkgs instead (normally pulled by core-apps).
+  environment.systemPackages = [ pkgs.nautilus ];
+  services.gnome.sushi.enable = true;
+  xdg.mime.defaultApplications."inode/directory" = "org.gnome.Nautilus.desktop";
+
   # Optional sub-services are left at their defaults (enabled):
   #   gnome-remote-desktop, gnome-user-share, rygel, gnome-initial-setup,
   #   gnome-online-accounts, evolution-data-server, dleyna,

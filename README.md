@@ -160,6 +160,20 @@ fwupdmgr get-updates
 sudo passwd gooze
 ```
 
+## Roadmap
+
+- **CI** (`.github/workflows/`, both this repo and `nixos-cli`):
+  - `check` — run `nix flake check` / `nix build` on push & PR to gate broken
+    configs.
+  - `update-flake-lock` — scheduled `nix flake update` that opens a PR with the
+    fresh lock file.
+  - Using Determinate Systems actions (`determinate-nix-action`,
+    `magic-nix-cache-action`, `update-flake-lock`).
+- **Secure Boot** (e.g. Lanzaboote) on the host machine.
+- **`home` hardware config** — generate and commit the real
+  `hosts/home/hardware-configuration.nix` (currently a placeholder; it blocks a
+  full `nix flake check` until filled in).
+
 ## Adding a host (e.g. WSL)
 
 Create `hosts/<name>/default.nix`, point it at a flavor, set

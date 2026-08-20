@@ -5,9 +5,11 @@
   # appear in Extension Manager), but *enabled* manually via the Extension
   # Manager flatpak (com.mattjakeman.ExtensionManager).
   #
-  # NOTE: bazaar-integration and gradia-integration are intentionally absent —
-  # they ship inside the io.github.kolunmi.Bazaar / be.alexandervanhee.gradia
-  # Flatpaks (already in modules/flatpak/base.nix).
+  # NOTE: bazaar-integration and gradia-integration are intentionally absent.
+  # They are NOT bundled in the Bazaar/Gradia flatpaks and are NOT packaged in
+  # nixpkgs `gnomeExtensions` — they are standalone shell extensions on
+  # extensions.gnome.org (e.g. "Gradia Capture"). Install them manually via
+  # Extension Manager, or package them here with buildGnomeExtension later.
   environment.systemPackages = with pkgs.gnomeExtensions; [
     user-themes            # user-theme@gnome-shell-extensions.gcampax.github.com
     vitals                 # Vitals@CoreCoding.com
