@@ -162,6 +162,19 @@ sudo passwd gooze
 
 ## Roadmap
 
+### Open items (fix first)
+
+- **Ghostty as default terminal** — `Terminal=true` .desktop entries (e.g. neovim)
+  still don't pick up Ghostty despite the `default-applications.terminal`
+  GSettings override in `modules/desktop/terminal.nix`. Investigate whether the
+  override isn't applying (per-user dconf overriding it, or the schema override
+  not taking effect).
+- **Refine misbehaving** — `page.tesk.Refine` flatpak has settings greyed out.
+  Suspects: managed extensions not enabled yet (e.g. `user-themes`), or missing
+  dconf/D-Bus permissions (check Flatseal).
+
+### Planned
+
 - **CI** (`.github/workflows/`, both this repo and `nixos-cli`):
   - `check` — run `nix flake check` / `nix build` on push & PR to gate broken
     configs.
