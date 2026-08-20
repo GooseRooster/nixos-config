@@ -12,6 +12,18 @@
     # Declarative flatpak installs (nixpkgs removed services.flatpak.packages).
     nix-flatpak.url = "github:gmodena/nix-flatpak/?ref=latest";
 
+    # GNOME Shell extensions built from source (not in nixpkgs/EGO). Pinned as
+    # flake inputs (flake = false) so `nix flake update` / CI keeps them current
+    # with no manual rev/hash management.
+    gradia-capture = {
+      url = "github:AlexanderVanhee/gradia-capture";
+      flake = false;
+    };
+    bazaar-companion = {
+      url = "github:bazaar-org/bazaar-companion";
+      flake = false;
+    };
+
     # CLI batteries live in their own repo. Safe to follow our nixpkgs.
     cli.url = "github:GooseRooster/nixos-cli";
     cli.inputs.nixpkgs.follows = "nixpkgs";

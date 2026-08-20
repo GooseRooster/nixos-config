@@ -1,22 +1,17 @@
-{ lib, stdenv, fetchFromGitHub, glib }:
+{ lib, stdenv, src, glib }:
 
 stdenv.mkDerivation {
   pname = "gnome-shell-extension-gradia-capture";
-  version = "unstable-2026-04-30";
+  version = "unstable";
 
-  src = fetchFromGitHub {
-    owner = "AlexanderVanhee";
-    repo = "gradia-capture";
-    # Update: bump `rev`, rebuild, paste the "got sha256-..." nix reports here.
-    rev = "9e441493a132e9f38d3a7fdf5d7f0d55a0a36369";
-    hash = "sha256-AEcVobmzcCS8CxsZ4nHnSB464v43/gnvs0S082jn8C0=";
-  };
+  inherit src;
 
   nativeBuildInputs = [ glib ];
 
   buildPhase = ''
     runHook preBuild
-    glib-compile-schemas --targetdir=schemas schemas
+    mkdir -p schemas
+    glib-compile-schemas --targetdir=schemas "$src/schemas"
     runHook postBuild
   '';
 
@@ -24,8 +19,8 @@ stdenv.mkDerivation {
     runHook preInstall
     extdir="$out/share/gnome-shell/extensions/gradia-integration@alexandervanhee.github.io"
     mkdir -p "$extdir"
-    cp -r src/. "$extdir/"
-    cp -r icons "$extdir/"
+    cp -r "$src/src/." "$extdir/"
+    cp -r "$src/icons" "$extdir/"
     cp -r schemas "$extdir/"
     runHook postInstall
   '';

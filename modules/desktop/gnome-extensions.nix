@@ -1,10 +1,11 @@
-{ config, lib, pkgs, ... }:
+{ config, lib, pkgs, inputs, ... }:
 
 let
   # Not in nixpkgs `gnomeExtensions` (and not on extensions.gnome.org), so
-  # built from source. See pkgs/gnome-extensions/.
-  gradia-capture = pkgs.callPackage ../../pkgs/gnome-extensions/gradia-capture { };
-  bazaar-companion = pkgs.callPackage ../../pkgs/gnome-extensions/bazaar-companion { };
+  # built from source. The sources come from the flake inputs (flake = false),
+  # so they're version-pinned by flake.lock and updated by `nix flake update`.
+  gradia-capture = pkgs.callPackage ../../pkgs/gnome-extensions/gradia-capture { src = inputs.gradia-capture; };
+  bazaar-companion = pkgs.callPackage ../../pkgs/gnome-extensions/bazaar-companion { src = inputs.bazaar-companion; };
 in
 {
   # Declaratively installed GNOME Shell extensions. They are installed (so they

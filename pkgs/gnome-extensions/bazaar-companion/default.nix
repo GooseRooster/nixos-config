@@ -1,22 +1,16 @@
-{ lib, stdenv, fetchFromGitHub }:
+{ lib, stdenv, src }:
 
 stdenv.mkDerivation {
   pname = "gnome-shell-extension-bazaar-companion";
-  version = "unstable-2026-04-30";
+  version = "unstable";
 
-  src = fetchFromGitHub {
-    owner = "bazaar-org";
-    repo = "bazaar-companion";
-    # Update: bump `rev`, rebuild, paste the "got sha256-..." nix reports here.
-    rev = "3bb9134985343ffd1993520eb37c90e113bfb09b";
-    hash = "sha256-t3lhCwbhrFivYZP1FfY304RurmfT+zb0r3Gy4F+wWGk=";
-  };
+  inherit src;
 
   installPhase = ''
     runHook preInstall
     extdir="$out/share/gnome-shell/extensions/bazaar-integration@kolunmi.github.io"
     mkdir -p "$extdir"
-    cp -r src/. "$extdir/"
+    cp -r "$src/src/." "$extdir/"
     runHook postInstall
   '';
 
