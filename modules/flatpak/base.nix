@@ -50,6 +50,7 @@
     "org.gnome.baobab"
     "org.gnome.clocks"
     "org.gnome.font-viewer"
+    "org.gnome.seahorse.Application"
     "org.mozilla.firefox"
     "org.mozilla.thunderbird_esr"
     "page.tesk.Refine"

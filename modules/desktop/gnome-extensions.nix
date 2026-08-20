@@ -1,16 +1,16 @@
 { config, lib, pkgs, ... }:
 
+let
+  # Not in nixpkgs `gnomeExtensions` (and not on extensions.gnome.org), so
+  # built from source. See pkgs/gnome-extensions/.
+  gradia-capture = pkgs.callPackage ../../pkgs/gnome-extensions/gradia-capture { };
+  bazaar-companion = pkgs.callPackage ../../pkgs/gnome-extensions/bazaar-companion { };
+in
 {
   # Declaratively installed GNOME Shell extensions. They are installed (so they
   # appear in Extension Manager), but *enabled* manually via the Extension
   # Manager flatpak (com.mattjakeman.ExtensionManager).
-  #
-  # NOTE: bazaar-integration and gradia-integration are intentionally absent.
-  # They are NOT bundled in the Bazaar/Gradia flatpaks and are NOT packaged in
-  # nixpkgs `gnomeExtensions` — they are standalone shell extensions on
-  # extensions.gnome.org (e.g. "Gradia Capture"). Install them manually via
-  # Extension Manager, or package them here with buildGnomeExtension later.
-  environment.systemPackages = with pkgs.gnomeExtensions; [
+  environment.systemPackages = (with pkgs.gnomeExtensions; [
     user-themes            # user-theme@gnome-shell-extensions.gcampax.github.com
     vitals                 # Vitals@CoreCoding.com
     clipboard-indicator    # clipboard-indicator@tudmotu.com
@@ -26,5 +26,8 @@
     caffeine               # caffeine@patapon.info
     gsconnect              # gsconnect@andyholmes.github.io
     logo-menu              # logomenu@aryan_k
+  ]) ++ [
+    gradia-capture         # gradia-integration@alexandervanhee.github.io
+    bazaar-companion       # bazaar-integration@kolunmi.github.io
   ];
 }
