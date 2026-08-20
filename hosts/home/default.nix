@@ -10,8 +10,7 @@
     ../../modules/extras/theming.nix
   ];
 
-  # TODO: confirm the hostname for this machine.
-  networking.hostName = "bluefin";
+  networking.hostName = "nixos";
 
   modules.users.primary = "gooze";
 

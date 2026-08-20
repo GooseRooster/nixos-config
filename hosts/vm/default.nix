@@ -4,9 +4,13 @@
   imports = [
     ./hardware-configuration.nix
     ../../flavors/desktop.nix
+    ../../modules/flatpak/base.nix
   ];
 
   networking.hostName = "nixos";
+
+  modules.flatpak.enable = true;
+  modules.flatpak.base.enable = true;
 
   modules.users.primary = "gooze";
   # Only until `passwd gooze` sets a real one; initialPassword applies only
