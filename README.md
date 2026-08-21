@@ -110,26 +110,38 @@ sudo nixos-rebuild switch --flake .#home
 The disk layout is declarative (`hosts/home/disko.nix`): a single NVMe with an
 ESP at `/boot` and a btrfs root split into `@` (→ `/`), `@home` (→ `/home`) and
 `@nix` (→ `/nix`) subvolumes, matching `modules/core/snapper.nix`. Swap is
-`zramSwap`, so there's no swap partition.
+`zramSwap`, so there's no swap partition. (The layout is currently unencrypted —
+LUKS is planned, see Roadmap.)
 
-Before first install, set `device` in `hosts/home/disko.nix` to your disk
-(`lsblk -o PATH,MODEL,SERIAL,SIZE`), and fill in the real
-`hosts/home/hardware-configuration.nix` (generate with `--no-filesystems` —
-disko supplies the `fileSystems`):
+### First install (host never installed before)
+
+Boot the NixOS minimal ISO, then:
 
 ```sh
-# from the NixOS minimal ISO
-nixos-generate-config --no-filesystems --root /mnt
-#   copy the generated hardware-configuration.nix (minus fileSystems) into hosts/home/
+# 1) get the config (install git first if the ISO lacks it: nix-shell -p git)
+git clone https://github.com/GooseRooster/nixos-config.git
+cd nixos-config
 
-# one-shot: partition + format + mount + nixos-install
-sudo nix run github:nix-community/disko/latest#disko-install -- \
-  --flake github:GooseRooster/nixos-config#home --disk main /dev/nvme0n1
+# 2) find your disk's stable /dev/disk/by-id path
+lsblk -o PATH,MODEL,SERIAL,SIZE
+#    → put it in hosts/home/disko.nix  (device = "/dev/disk/by-id/nvme-...")
+
+# 3) generate the hardware config on the live system (hardware only — disko
+#    supplies fileSystems), and copy it into the repo
+nixos-generate-config --no-filesystems
+cp /etc/nixos/hardware-configuration.nix hosts/home/hardware-configuration.nix
+
+# 4) one-shot install: partition + format + mount + nixos-install, from the local flake
+sudo nix run github:nix-community/disko/latest#disko-install -- --flake .#home
 ```
 
-`disko-install` does everything in one step (replacing the manual partitioning
-from the minimal-install instructions). To partition/format *without* installing
-(e.g. to re-image a borked disk), run:
+`disko-install` replaces the manual partitioning from the minimal-install
+instructions. `--disk <name> <device>` is an *optional* override that sets
+`disko.devices.disk.<name>.device` from the command line (e.g.
+`--disk main /dev/nvme0n1`) instead of editing `disko.nix`; prefer putting the
+real `by-id` path in `disko.nix` so later `nixos-rebuild` uses the same device.
+
+To partition/format *without* installing (e.g. to re-image a borked disk), run:
 
 ```sh
 sudo nix run github:nix-community/disko/latest -- \
@@ -207,6 +219,8 @@ sudo passwd gooze
   - Using Determinate Systems actions (`determinate-nix-action`,
     `magic-nix-cache-action`, `update-flake-lock`).
 - **Secure Boot** (e.g. Lanzaboote) on the host machine.
+- **LUKS encryption** — add a `luks` layer to `hosts/home/disko.nix` (currently
+  plain btrfs) and wire `boot.initrd.luks.devices`. Pair with Secure Boot.
 - **`home` hardware config** — generate and commit the real
   `hosts/home/hardware-configuration.nix` (currently a placeholder; it blocks a
   full `nix flake check` until filled in). Disko already supplies the
