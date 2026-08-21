@@ -22,6 +22,7 @@
     imports = [ inputs.dotfiles.hmModules.default ];
     home.modules.gaming.enable = true;
     home.modules.theming.enable = true;
+    home.modules.podmanAlias.enable = true;
   };
 
   modules.flatpak.enable = true;

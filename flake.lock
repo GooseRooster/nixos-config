@@ -23,16 +23,42 @@
         ]
       },
       "locked": {
-        "lastModified": 1787250019,
-        "narHash": "sha256-tAd28ROIGTLuR2RmTcf5d9opV63Rmo0KaZ5+MyNmy5Q=",
+        "lastModified": 1787344381,
+        "narHash": "sha256-dEtYZMYznyV6HSrvKFBHmZX9ZcpbRD3hKaK7zLtg11E=",
         "owner": "GooseRooster",
         "repo": "nix-cli",
-        "rev": "58a63b8c2dd07c1b85b072be03c70c2dce166ef6",
+        "rev": "ec823ca485ef3a6bcf7594a88f36ce0f53b64822",
         "type": "github"
       },
       "original": {
         "owner": "GooseRooster",
         "repo": "nix-cli",
+        "type": "github"
+      }
+    },
+    "dotfiles": {
+      "inputs": {
+        "home-manager": [
+          "home-manager"
+        ],
+        "nix-cli": [
+          "cli"
+        ],
+        "nixpkgs": [
+          "nixpkgs"
+        ]
+      },
+      "locked": {
+        "lastModified": 1787345332,
+        "narHash": "sha256-Juc4nrqJmpmO3tPd4rJVUb1k0ohy9cEfjsGKJNwvWXk=",
+        "owner": "GooseRooster",
+        "repo": "home-manager",
+        "rev": "82569d1dc20b509bd906a760b24f2575db6eed0a",
+        "type": "github"
+      },
+      "original": {
+        "owner": "GooseRooster",
+        "repo": "home-manager",
         "type": "github"
       }
     },
@@ -70,6 +96,26 @@
         "type": "github"
       }
     },
+    "gnomad": {
+      "inputs": {
+        "nixpkgs": [
+          "nixpkgs"
+        ]
+      },
+      "locked": {
+        "lastModified": 1787335254,
+        "narHash": "sha256-5ATUT9gLur7x+y9pMyB5KamQG01A1hsfJPLVqXoc1dA=",
+        "owner": "GooseRooster",
+        "repo": "gnomad",
+        "rev": "bb7b5fe2055aa72c34647ec358c46ed2c07e71cd",
+        "type": "github"
+      },
+      "original": {
+        "owner": "GooseRooster",
+        "repo": "gnomad",
+        "type": "github"
+      }
+    },
     "gradia-capture": {
       "flake": false,
       "locked": {
@@ -83,6 +129,26 @@
       "original": {
         "owner": "AlexanderVanhee",
         "repo": "gradia-capture",
+        "type": "github"
+      }
+    },
+    "home-manager": {
+      "inputs": {
+        "nixpkgs": [
+          "nixpkgs"
+        ]
+      },
+      "locked": {
+        "lastModified": 1787176219,
+        "narHash": "sha256-djoRr6jBpe35q/0JwAvXpFXg1Ktf+X54NU2RLR7wnHw=",
+        "owner": "nix-community",
+        "repo": "home-manager",
+        "rev": "c53d643b3737e2fcd04e6cb3b3580ef50b2087a0",
+        "type": "github"
+      },
+      "original": {
+        "owner": "nix-community",
+        "repo": "home-manager",
         "type": "github"
       }
     },
@@ -191,7 +257,10 @@
       "inputs": {
         "bazaar-companion": "bazaar-companion",
         "cli": "cli",
+        "dotfiles": "dotfiles",
+        "gnomad": "gnomad",
         "gradia-capture": "gradia-capture",
+        "home-manager": "home-manager",
         "nix-cachyos-kernel": "nix-cachyos-kernel",
         "nix-flatpak": "nix-flatpak",
         "nixpkgs": "nixpkgs_2",
