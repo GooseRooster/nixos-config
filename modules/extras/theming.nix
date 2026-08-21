@@ -1,15 +1,21 @@
-{ config, lib, pkgs, ... }:
+{ config, lib, pkgs, inputs, ... }:
 
 let
   cfg = config.modules.theming;
 in
 {
+  imports = [
+    inputs.gnomad.nixosModules.gnomad
+  ];
+
   options.modules.theming.enable =
-    lib.mkEnableOption "theming tools (tinty, gowall)";
+    lib.mkEnableOption "theming tools (gnomad, tinty, gowall)";
 
   config = lib.mkIf cfg.enable {
-    # `gnomad` is a custom Homebrew tap and has no nixpkgs equivalent — it is
-    # intentionally omitted here and remains with chezmoi for now.
+    # `gnomad` is built by its own flake (see ../flake.nix); the module installs
+    # the wrapped binary (git/gowall/tinty/gsettings baked into its PATH).
+    programs.gnomad.enable = true;
+
     environment.systemPackages = with pkgs; [
       tinty
       gowall

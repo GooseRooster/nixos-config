@@ -31,6 +31,10 @@
     # CLI batteries live in their own repo. Safe to follow our nixpkgs.
     cli.url = "github:GooseRooster/nixos-cli";
     cli.inputs.nixpkgs.follows = "nixpkgs";
+
+    # GNOME colour-scheme TUI (theming). Safe to follow our nixpkgs.
+    gnomad.url = "github:GooseRooster/gnomad";
+    gnomad.inputs.nixpkgs.follows = "nixpkgs";
   };
 
   outputs = inputs @ { self, nixpkgs, ... }:
