@@ -124,15 +124,15 @@ cd nixos-config
 
 # 2) find your disk's stable /dev/disk/by-id path
 lsblk -o PATH,MODEL,SERIAL,SIZE
-#    → put it in hosts/home/disko.nix  (device = "/dev/disk/by-id/nvme-...")
+#    → put it in hosts/<host>/disko.nix  (device = "/dev/disk/by-id/nvme-...")
 
 # 3) generate the hardware config on the live system (hardware only — disko
 #    supplies fileSystems), and copy it into the repo
 nixos-generate-config --no-filesystems
-cp /etc/nixos/hardware-configuration.nix hosts/home/hardware-configuration.nix
+cp /etc/nixos/hardware-configuration.nix hosts/<host>/hardware-configuration.nix
 
 # 4) one-shot install: partition + format + mount + nixos-install, from the local flake
-sudo nix run github:nix-community/disko/latest#disko-install -- --flake .#home
+sudo nix run github:nix-community/disko/latest#disko-install -- --flake .#<host>
 ```
 
 `disko-install` replaces the manual partitioning from the minimal-install
