@@ -9,12 +9,10 @@
     devhelp   # API documentation browser
     d-spy     # D-Bus inspector
     sysprof   # system/kernel profiler
-  ];
 
-  # dconf-editor + Extension Manager are native too: their flatpaks can't browse
-  # host GSettings schemas (org.gnome.shell, extension schemas) that live in the
-  # Nix store outside the sandbox.
-  environment.systemPackages = with pkgs; [
+    # dconf-editor + Extension Manager are native too: their flatpaks can't
+    # browse host GSettings schemas (org.gnome.shell, extension schemas) that
+    # live in the Nix store outside the sandbox.
     dconf-editor
     gnome-extension-manager
   ];
