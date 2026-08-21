@@ -1,22 +1,17 @@
 { pkgs, ... }:
 
 # Declarative GNOME dconf defaults (system-db sits below user-db, so these are
-# soft defaults the user can still override in Settings; GDM has no user db, so
-# its font is effectively forced).
-let
-  font = "JetBrainsMono Nerd Font Mono 11";
-in
+# soft defaults the user can still override in Settings).
 {
   programs.dconf.enable = true;
 
-  # GNOME session defaults.
   programs.dconf.profiles.user.databases = [
     {
       settings = {
         "org/gnome/desktop/interface" = {
-          font-name = font;
-          document-font-name = font;
-          monospace-font-name = font;
+          # JetBrains Mono only as the monospace/terminal default — Nerd Fonts
+          # are awkward to get Flatpaks to respect as a UI font.
+          monospace-font-name = "JetBrainsMono Nerd Font Mono 11";
         };
 
         # Legacy default-terminal key — still used by the gsd media-key /
@@ -32,19 +27,6 @@ in
           enabled-extensions = [
             pkgs.gnomeExtensions.user-themes.extensionUuid
           ];
-        };
-      };
-    }
-  ];
-
-  # GDM login screen (gdm user profile) uses the same fonts.
-  programs.dconf.profiles.gdm.databases = [
-    {
-      settings = {
-        "org/gnome/desktop/interface" = {
-          font-name = font;
-          document-font-name = font;
-          monospace-font-name = font;
         };
       };
     }
