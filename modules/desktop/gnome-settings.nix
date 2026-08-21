@@ -1,4 +1,4 @@
-{ pkgs, ... }:
+{ ... }:
 
 # Declarative GNOME dconf defaults (system-db sits below user-db, so these are
 # soft defaults the user can still override in Settings).
@@ -20,13 +20,6 @@
         "org/gnome/desktop/default-applications/terminal" = {
           exec = "ghostty";
           exec-arg = "-e";
-        };
-
-        # Enable the user-themes extension so Refine's shell-theme row works.
-        "org/gnome/shell" = {
-          enabled-extensions = [
-            pkgs.gnomeExtensions.user-themes.extensionUuid
-          ];
         };
       };
     }

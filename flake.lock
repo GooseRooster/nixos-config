@@ -1,5 +1,21 @@
 {
   "nodes": {
+    "bazaar-companion": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1775232821,
+        "narHash": "sha256-Z2WQ6uQqlU2z9DLtZ8s258A8+bASk7453yuwOK9OrII=",
+        "owner": "bazaar-org",
+        "repo": "bazaar-companion",
+        "rev": "3bb9134985343ffd1993520eb37c90e113bfb09b",
+        "type": "github"
+      },
+      "original": {
+        "owner": "bazaar-org",
+        "repo": "bazaar-companion",
+        "type": "github"
+      }
+    },
     "cli": {
       "inputs": {
         "nixpkgs": [
@@ -51,6 +67,22 @@
       "original": {
         "owner": "hercules-ci",
         "repo": "flake-parts",
+        "type": "github"
+      }
+    },
+    "gradia-capture": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1777365035,
+        "narHash": "sha256-73K60pfIqlJmCu+RqeCvDzQUh/9yW965FZ2ew54EKI8=",
+        "owner": "AlexanderVanhee",
+        "repo": "gradia-capture",
+        "rev": "9e441493a132e9f38d3a7fdf5d7f0d55a0a36369",
+        "type": "github"
+      },
+      "original": {
+        "owner": "AlexanderVanhee",
+        "repo": "gradia-capture",
         "type": "github"
       }
     },
@@ -138,12 +170,32 @@
         "type": "github"
       }
     },
+    "paperwm": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1785427773,
+        "narHash": "sha256-48k9PO5TFdQjopapVcph2kRLp10ORTAxWSqYpcclhpM=",
+        "owner": "paperwm",
+        "repo": "PaperWM",
+        "rev": "e9362e34d163c56cd038e62ac3e16a91c95ce527",
+        "type": "github"
+      },
+      "original": {
+        "owner": "paperwm",
+        "ref": "develop",
+        "repo": "PaperWM",
+        "type": "github"
+      }
+    },
     "root": {
       "inputs": {
+        "bazaar-companion": "bazaar-companion",
         "cli": "cli",
+        "gradia-capture": "gradia-capture",
         "nix-cachyos-kernel": "nix-cachyos-kernel",
         "nix-flatpak": "nix-flatpak",
-        "nixpkgs": "nixpkgs_2"
+        "nixpkgs": "nixpkgs_2",
+        "paperwm": "paperwm"
       }
     }
   },

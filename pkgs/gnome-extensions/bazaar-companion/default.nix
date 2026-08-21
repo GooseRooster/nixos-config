@@ -14,6 +14,10 @@ stdenv.mkDerivation {
     runHook postInstall
   '';
 
+  passthru = {
+    extensionUuid = "bazaar-integration@kolunmi.github.io";
+  };
+
   meta = with lib; {
     description = "Bazaar Companion: use Bazaar to view app details when right-clicking Flatpak applications";
     homepage = "https://github.com/bazaar-org/bazaar-companion";

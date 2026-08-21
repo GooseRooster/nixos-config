@@ -23,6 +23,10 @@
       url = "github:bazaar-org/bazaar-companion";
       flake = false;
     };
+    paperwm = {
+      url = "github:paperwm/PaperWM/develop";
+      flake = false;
+    };
 
     # CLI batteries live in their own repo. Safe to follow our nixpkgs.
     cli.url = "github:GooseRooster/nixos-cli";
