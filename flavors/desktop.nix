@@ -6,6 +6,7 @@
     ../modules/desktop/gnome.nix
     ../modules/desktop/gnome-devtools.nix
     ../modules/desktop/gnome-extensions.nix
+    ../modules/desktop/gnome-settings.nix
     ../modules/desktop/terminal.nix
     ../modules/desktop/graphics.nix
     ../modules/desktop/portals.nix

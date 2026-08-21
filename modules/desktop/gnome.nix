@@ -15,7 +15,13 @@
 
   # Nautilus (Files) + Sushi (previewer): the org.gnome.Nautilus flatpak is
   # deprecated, so install from nixpkgs instead (normally pulled by core-apps).
-  environment.systemPackages = [ pkgs.nautilus ];
+  # Refine is also native: its flatpak strips /usr/share from XDG_DATA_DIRS and
+  # re-reads host schemas via /run/host, which can't see NixOS store paths, so
+  # every setting renders greyed out.
+  environment.systemPackages = [
+    pkgs.nautilus
+    pkgs.refine
+  ];
   services.gnome.sushi.enable = true;
   xdg.mime.defaultApplications."inode/directory" = "org.gnome.Nautilus.desktop";
 
@@ -37,5 +43,6 @@
   fonts.packages = with pkgs; [
     noto-fonts-color-emoji
     noto-fonts
+    nerd-fonts.jetbrains-mono
   ];
 }

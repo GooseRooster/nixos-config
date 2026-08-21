@@ -155,16 +155,16 @@ sudo passwd gooze
 
 ## Roadmap
 
-### Open items (fix first)
+### Resolved
 
-- **Ghostty as default terminal** — `Terminal=true` .desktop entries (e.g. neovim)
-  still don't pick up Ghostty despite the `default-applications.terminal`
-  GSettings override in `modules/desktop/terminal.nix`. Investigate whether the
-  override isn't applying (per-user dconf overriding it, or the schema override
-  not taking effect).
-- **Refine misbehaving** — `page.tesk.Refine` flatpak has settings greyed out.
-  Suspects: managed extensions not enabled yet (e.g. `user-themes`), or missing
-  dconf/D-Bus permissions (check Flatseal).
+- **Ghostty as default terminal** — switched to `xdg.terminal-exec`
+  (`modules/desktop/terminal.nix`): modern GLib no longer reads
+  `org.gnome.desktop.default-applications.terminal` for `Terminal=true` .desktop
+  entries, it tries `xdg-terminal-exec` first.
+- **Refine misbehaving** — the `page.tesk.Refine` flatpak can't see NixOS's host
+  GSettings schemas (they live in the Nix store, outside the sandbox), so every
+  row rendered greyed out. Replaced with native `pkgs.refine`; the `user-themes`
+  extension is enabled by default via `modules/desktop/gnome-settings.nix`.
 
 ### Planned
 

@@ -8,10 +8,8 @@
   modules.flatpak.base.packages = [
     "io.mpv.Mpv"
     "be.alexandervanhee.gradia"
-    "ca.desrt.dconf-editor"
     "com.github.PintaProject.Pinta"
     "com.github.tchx84.Flatseal"
-    "com.mattjakeman.ExtensionManager"
     "de.leopoldluley.Clapgrep"
     "io.github.bhack.mini-eq"
     "io.github.flattool.Ignition"
@@ -53,7 +51,6 @@
     "org.gnome.seahorse.Application"
     "org.mozilla.firefox"
     "org.mozilla.thunderbird_esr"
-    "page.tesk.Refine"
     "com.usebottles.bottles"
     "com.protonvpn.www"
     "com.rafaelmardojai.Blanket"
