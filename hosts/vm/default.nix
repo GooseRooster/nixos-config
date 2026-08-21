@@ -16,9 +16,11 @@
   modules.users.primary = "gooze";
 
   # Home dotfiles — desktop shell/editor, but no gaming/theming (this VM has
-  # neither the flatpaks nor the theming extras).
+  # neither the flatpaks nor the theming extras). podmanAlias on: lazydocker
+  # needs the rootless socket + DOCKER_HOST (dockerCompat only gives rootful).
   home-manager.users.gooze = {
     imports = [ inputs.dotfiles.hmModules.default ];
+    home.modules.podmanAlias.enable = true;
   };
   # Only until `passwd gooze` sets a real one; initialPassword applies only
   # while the account has no password set.
