@@ -105,6 +105,37 @@ sudo nixos-rebuild switch --flake .#vm
 sudo nixos-rebuild switch --flake .#home
 ```
 
+## Installing on the host (disko)
+
+The disk layout is declarative (`hosts/home/disko.nix`): a single NVMe with an
+ESP at `/boot` and a btrfs root split into `@` (→ `/`), `@home` (→ `/home`) and
+`@nix` (→ `/nix`) subvolumes, matching `modules/core/snapper.nix`. Swap is
+`zramSwap`, so there's no swap partition.
+
+Before first install, set `device` in `hosts/home/disko.nix` to your disk
+(`lsblk -o PATH,MODEL,SERIAL,SIZE`), and fill in the real
+`hosts/home/hardware-configuration.nix` (generate with `--no-filesystems` —
+disko supplies the `fileSystems`):
+
+```sh
+# from the NixOS minimal ISO
+nixos-generate-config --no-filesystems --root /mnt
+#   copy the generated hardware-configuration.nix (minus fileSystems) into hosts/home/
+
+# one-shot: partition + format + mount + nixos-install
+sudo nix run github:nix-community/disko/latest#disko-install -- \
+  --flake github:GooseRooster/nixos-config#home --disk main /dev/nvme0n1
+```
+
+`disko-install` does everything in one step (replacing the manual partitioning
+from the minimal-install instructions). To partition/format *without* installing
+(e.g. to re-image a borked disk), run:
+
+```sh
+sudo nix run github:nix-community/disko/latest -- \
+  --mode disko --flake github:GooseRooster/nixos-config#home
+```
+
 
 ## Cheatsheet
 
@@ -178,7 +209,14 @@ sudo passwd gooze
 - **Secure Boot** (e.g. Lanzaboote) on the host machine.
 - **`home` hardware config** — generate and commit the real
   `hosts/home/hardware-configuration.nix` (currently a placeholder; it blocks a
-  full `nix flake check` until filled in).
+  full `nix flake check` until filled in). Disko already supplies the
+  `fileSystems`, so generate with `--no-filesystems`.
+
+### Resolved
+
+- **Declarative disk layout (disko)** — `hosts/home/disko.nix` partitions/formats
+  the host (ESP + btrfs `@`/`@home`/`@nix`), replacing manual partitioning. See
+  "Installing on the host (disko)".
 
 ## Adding a host (e.g. WSL)
 

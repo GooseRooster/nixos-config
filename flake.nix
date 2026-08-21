@@ -44,6 +44,10 @@
     dotfiles.inputs.home-manager.follows = "home-manager";
     dotfiles.inputs.nix-cli.follows = "cli";
     dotfiles.inputs.nixpkgs.follows = "nixpkgs";
+
+    # Declarative disk partitioning/formatting (btrfs layout for the host).
+    disko.url = "github:nix-community/disko/latest";
+    disko.inputs.nixpkgs.follows = "nixpkgs";
   };
 
   outputs = inputs @ { self, nixpkgs, ... }:
@@ -65,6 +69,12 @@
         modules = [
           ./hosts/home
         ];
+      };
+
+      # Exposed so `disko` can partition/format without a full system build:
+      #   nix run github:nix-community/disko/latest -- --mode disko --flake github:GooseRooster/nixos-config#home
+      diskoConfigurations.home = {
+        imports = [ ./hosts/home/disko.nix ];
       };
     };
 }

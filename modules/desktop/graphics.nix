@@ -21,7 +21,7 @@ in
     # AMD ROCm OpenCL (e.g. for compute/blender) is huge — uncomment if wanted:
     #   rocmPackages.clr.icd
     hardware.graphics.extraPackages = lib.optionals cfg.gaming (with pkgs; [
-      vaapiVdpau
+      libva-vdpau-driver
       libvdpau-va-gl
     ]);
   };

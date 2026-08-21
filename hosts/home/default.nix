@@ -3,12 +3,14 @@
 {
   imports = [
     ./hardware-configuration.nix
+    ./disko.nix
     ../../flavors/desktop.nix
     ../../modules/flatpak/base.nix
     ../../modules/flatpak/gaming.nix
     ../../modules/flatpak/multimedia.nix
     ../../modules/extras/theming.nix
     ../../modules/extras/tuned.nix
+    inputs.disko.nixosModules.disko
     inputs.home-manager.nixosModules.home-manager
   ];
 
