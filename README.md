@@ -32,7 +32,7 @@ A **host** selects a **flavor** and adds its own machine-specific extras:
   sets, theming, kernel, etc).
 
 `hosts/vm` and `hosts/home` both use the `desktop` flavor; only `home` enables
-flatpaks/theming.
+theming.
 
 ## Kernel selection
 
@@ -95,13 +95,8 @@ Extensions are installed declaratively in `modules/desktop/gnome-extensions.nix`
 via `pkgs.gnomeExtensions`. They are *enabled* manually with the
 `com.mattjakeman.ExtensionManager` flatpak (or `gnome-extensions enable <uuid>`).
 
-`bazaar-integration` and `gradia-integration` are not listed there — they ship
-inside the `io.github.kolunmi.Bazaar` and `be.alexandervanhee.gradia` flatpaks.
+Some extensions are pulled in as custom flakes if they are not available on EGO.
 
-## Dotfiles via chezmoi
-
-dconf/GSettings tweaks and GNOME shell preferences (beyond what's set
-declaratively) are managed by chezmoi, not Nix.
 
 ## Apply
 
@@ -110,8 +105,6 @@ sudo nixos-rebuild switch --flake .#vm
 sudo nixos-rebuild switch --flake .#home
 ```
 
-> `hosts/home/hardware-configuration.nix` is a placeholder — generate it on the
-> real machine with `nixos-generate-config` and copy the result there first.
 
 ## Cheatsheet
 
