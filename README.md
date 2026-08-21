@@ -10,7 +10,7 @@ Flake-based NixOS configuration for a Flatpak-first, bluefin-like GNOME desktop:
 - **Hardening**: moderate kernel/sudo/ssh hardening (`modules/core/hardening.nix`)
 - **Maintenance**: automatic GC + store optimisation + fwupd
 
-CLI/dev batteries live in a separate repo ([`nixos-cli`](https://github.com/GooseRooster/nixos-cli))
+CLI/dev batteries live in a separate repo ([`nix-cli`](https://github.com/GooseRooster/nix-cli))
 and are pulled in as a flake input.
 
 ## Layout
@@ -168,7 +168,7 @@ sudo passwd gooze
 
 ### Planned
 
-- **CI** (`.github/workflows/`, both this repo and `nixos-cli`):
+- **CI** (`.github/workflows/`, both this repo and `nix-cli`):
   - `check` — run `nix flake check` / `nix build` on push & PR to gate broken
     configs.
   - `update-flake-lock` — scheduled `nix flake update` that opens a PR with the

@@ -26,13 +26,13 @@
         "lastModified": 1787250019,
         "narHash": "sha256-tAd28ROIGTLuR2RmTcf5d9opV63Rmo0KaZ5+MyNmy5Q=",
         "owner": "GooseRooster",
-        "repo": "nixos-cli",
+        "repo": "nix-cli",
         "rev": "58a63b8c2dd07c1b85b072be03c70c2dce166ef6",
         "type": "github"
       },
       "original": {
         "owner": "GooseRooster",
-        "repo": "nixos-cli",
+        "repo": "nix-cli",
         "type": "github"
       }
     },

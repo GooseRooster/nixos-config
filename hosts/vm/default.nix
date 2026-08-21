@@ -5,6 +5,7 @@
     ./hardware-configuration.nix
     ../../flavors/desktop.nix
     ../../modules/flatpak/base.nix
+    inputs.home-manager.nixosModules.home-manager
   ];
 
   networking.hostName = "nixos";
@@ -13,6 +14,12 @@
   modules.flatpak.base.enable = true;
 
   modules.users.primary = "gooze";
+
+  # Home dotfiles — desktop shell/editor, but no gaming/theming (this VM has
+  # neither the flatpaks nor the theming extras).
+  home-manager.users.gooze = {
+    imports = [ inputs.dotfiles.hmModules.default ];
+  };
   # Only until `passwd gooze` sets a real one; initialPassword applies only
   # while the account has no password set.
   modules.users.initialPassword = "changeme";

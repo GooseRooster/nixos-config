@@ -29,12 +29,21 @@
     };
 
     # CLI batteries live in their own repo. Safe to follow our nixpkgs.
-    cli.url = "github:GooseRooster/nixos-cli";
+    cli.url = "github:GooseRooster/nix-cli";
     cli.inputs.nixpkgs.follows = "nixpkgs";
 
     # GNOME colour-scheme TUI (theming). Safe to follow our nixpkgs.
     gnomad.url = "github:GooseRooster/gnomad";
     gnomad.inputs.nixpkgs.follows = "nixpkgs";
+
+    # Home Manager (the tool) + our dotfiles repo (the config).
+    home-manager.url = "github:nix-community/home-manager";
+    home-manager.inputs.nixpkgs.follows = "nixpkgs";
+
+    dotfiles.url = "github:GooseRooster/home-manager";
+    dotfiles.inputs.home-manager.follows = "home-manager";
+    dotfiles.inputs.nix-cli.follows = "cli";
+    dotfiles.inputs.nixpkgs.follows = "nixpkgs";
   };
 
   outputs = inputs @ { self, nixpkgs, ... }:

@@ -9,11 +9,20 @@
     ../../modules/flatpak/multimedia.nix
     ../../modules/extras/theming.nix
     ../../modules/extras/tuned.nix
+    inputs.home-manager.nixosModules.home-manager
   ];
 
   networking.hostName = "nixos";
 
   modules.users.primary = "gooze";
+
+  # Home dotfiles (the GooseRooster/home-manager repo). Flags mirror the
+  # system-side flatpak/theming toggles below.
+  home-manager.users.gooze = {
+    imports = [ inputs.dotfiles.hmModules.default ];
+    home.modules.gaming.enable = true;
+    home.modules.theming.enable = true;
+  };
 
   modules.flatpak.enable = true;
   modules.flatpak.base.enable = true;
