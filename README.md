@@ -198,16 +198,6 @@ sudo passwd gooze
 
 ## Roadmap
 
-### Resolved
-
-- **Ghostty as default terminal** — switched to `xdg.terminal-exec`
-  (`modules/desktop/terminal.nix`): modern GLib no longer reads
-  `org.gnome.desktop.default-applications.terminal` for `Terminal=true` .desktop
-  entries, it tries `xdg-terminal-exec` first.
-- **Refine misbehaving** — the `page.tesk.Refine` flatpak can't see NixOS's host
-  GSettings schemas (they live in the Nix store, outside the sandbox), so every
-  row rendered greyed out. Replaced with native `pkgs.refine`; the `user-themes`
-  extension is enabled by default via `modules/desktop/gnome-settings.nix`.
 
 ### Planned
 
@@ -226,11 +216,6 @@ sudo passwd gooze
   full `nix flake check` until filled in). Disko already supplies the
   `fileSystems`, so generate with `--no-filesystems`.
 
-### Resolved
-
-- **Declarative disk layout (disko)** — `hosts/home/disko.nix` partitions/formats
-  the host (ESP + btrfs `@`/`@home`/`@nix`), replacing manual partitioning. See
-  "Installing on the host (disko)".
 
 ## Adding a host (e.g. WSL)
 
