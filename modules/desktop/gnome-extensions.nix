@@ -24,7 +24,6 @@ let
     blur-my-shell          # blur-my-shell@aunetx
     caffeine               # caffeine@patapon.info
     gsconnect              # gsconnect@andyholmes.github.io
-    logo-menu              # logomenu@aryan_k
   ];
 
   allExtensions = upstream ++ builtins.attrValues custom;

@@ -15,8 +15,15 @@ in
     services.tuned = {
       enable = true;
 
-      # Map GNOME's three power profiles onto richer TuneD profiles.
-      ppdSettings.profiles.performance = "gaming";
+      # Map GNOME's three power-profiles-daemon profiles onto TuneD profiles.
+      # The full map must be set: `ppdSettings.profiles` is an attrsOf whose
+      # default is dropped once any key is set, and tuned-ppd aborts if
+      # `power-saver` (and `balanced`) are missing.
+      ppdSettings.profiles = {
+        power-saver = "powersave";
+        balanced = "balanced";
+        performance = "gaming";
+      };
 
       # Custom "gaming" profile: latency-performance is tuned for low-latency
       # interactive/gaming workloads.

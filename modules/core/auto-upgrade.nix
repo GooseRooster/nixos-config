@@ -12,8 +12,8 @@ in
       default = null;
       description = ''
         Flake URI this host upgrades from, e.g.
-          "git+file:///home/gooze/nixos-config#home"   (local repo)
-          "github:GooseRooster/nixos-config#home"      (pushed repo)
+          "git+file:///home/goose/.config/nixos-config#home"   (local repo)
+          "github:GooseRooster/nixos-config#home"              (pushed repo)
       '';
     };
   };

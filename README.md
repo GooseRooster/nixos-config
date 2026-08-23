@@ -53,18 +53,21 @@ is fetched.
 ## Users are declarative
 
 Users are declared per host via `modules/users.nix`. Set
-`modules.users.primary = "gooze"` (or a per-host name) and the module creates a
+`modules.users.primary = "goose"` (or a per-host name) and the module creates a
 normal user with the groups supplied by the flavor.
 
-By default no password is declared — with `users.mutableUsers = true` (the
+The declarative user is separate from the throwaway account you create during
+the graphical install, so it gets a clean `/home/<user>` and keyring. By
+default no password is declared — with `users.mutableUsers = true` (the
 default) set it imperatively after first boot:
 
 ```sh
-sudo passwd gooze
+sudo passwd goose
 ```
 
-For testing (e.g. the VM, where you need to log in before you can `passwd`),
-set a throwaway password that only applies while the account has none:
+For first-boot convenience (and for the VM, where you need to log in before
+you can `passwd`), set a throwaway password that only applies while the account
+has none:
 
 ```nix
 modules.users.initialPassword = "changeme";
@@ -125,10 +128,9 @@ Boot the GNOME ISO and run the graphical installer:
   encryption — recommended). Use *erase disk* (or manual partitioning); the
   installer creates `home` and `nix` subvolumes plus an encrypted swap
   partition.
-- Create a normal user named **with a name matching the initial user in your target host** and set its password. This password
-  becomes the login + `sudo` password and is **reused as-is** by the flake — the
-  flake declares the user with no password option, so `users.mutableUsers`
-  (the default) leaves the installer password untouched.
+- Create a **throwaway** user (any name, e.g. `installer`) — the flake declares
+  its own user (e.g. `goose`) with a fresh `/home`, so the two never clash.
+  **Still set a root password** during the install.
 - Finish and reboot into the installed system.
 
 ### 2. Clone the flake
@@ -178,8 +180,24 @@ The first rebuild may need to run **twice** so the CachyOS binary cache
 (substituter) takes effect before the kernel is fetched (see
 [Kernel selection](#kernel-selection)).
 
-After this, the installer-set password still works and `/home/<youruser>` is
-unchanged — the flake reuses the same account and home directory.
+After this, log in as the declarative user (e.g. `goose`, password `changeme`
+if `modules.users.initialPassword` is set) — the throwaway installer user is
+unused and can be left behind.
+
+### 6. Re-run Home Manager activation if it was offline
+
+Home Manager activation runs **once at boot** as a system service
+(`home-manager-<user>.service`), not on login. If the network wasn't up yet on
+that first boot (e.g. Wi-Fi wasn't connected before the service ran), the
+network-dependent activation steps (LazyVim clone, `tinty sync`, television
+channels) fail harmlessly and are skipped. Once you're online, re-run them:
+
+```sh
+sudo systemctl restart home-manager-<youruser>.service
+```
+
+(or reboot). The steps are idempotent and failure-tolerant, so they complete on
+the next run. Verify with `journalctl -u home-manager-<youruser>.service`.
 
 ## Secure Boot & LUKS/TPM2
 
@@ -272,7 +290,7 @@ sudo nix-collect-garbage --delete-older-than 30d
 fwupdmgr get-updates
 
 # Set the declarative user's password (first boot)
-sudo passwd gooze
+sudo passwd goose
 ```
 
 ## Roadmap

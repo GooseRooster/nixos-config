@@ -7,7 +7,7 @@ in
   options.modules.users = {
     primary = lib.mkOption {
       type = lib.types.str;
-      default = "gooze";
+      default = "goose";
       description = "Primary normal user account name.";
     };
 
