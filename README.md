@@ -233,6 +233,15 @@ as a fallback (and is required after any BIOS/Secure Boot change, which
 invalidates PCR 7 — re-enroll with the same command). `boot.initrd.systemd.enable`
 is set in `modules/core/system.nix`, which TPM2 unlock requires.
 
+Safety check before any of this: the passphrase you set at install is LUKS
+keyslot 0 and is never touched by TPM enrollment, so you can't be locked out as
+long as you remember it. Verify it independently after install:
+
+```sh
+sudo cryptsetup open --test-passphrase /dev/disk/by-partlabel/disk-main-luks
+# → "Key slot 0 unlocked." confirms the passphrase works
+```
+
 ## Power management
 
 - **Sleep / suspend-to-RAM** works out of the box via GNOME + systemd-logind —
