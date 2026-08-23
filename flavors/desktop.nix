@@ -18,7 +18,8 @@
     inputs.cli.nixosModules.dev
     inputs.cli.nixosModules.base-extra
     inputs.cli.nixosModules.ssh
-    inputs.cli.nixosModules.podman
+
+    ../modules/core/podman.nix
   ];
 
   modules.users.extraGroups = [

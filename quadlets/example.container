@@ -1,0 +1,17 @@
+# Reference: https://docs.podman.io/en/latest/markdown/podman-systemd.unit.5.html
+# System quadlets: /etc/containers/systemd/*.container
+# User quadlets:   ~/.config/containers/systemd/*.container
+
+[Container]
+Image=docker.io/library/nginx:latest
+ContainerName=nginx
+PublishPort=8080:80
+AutoUpdate=registry
+
+[Service]
+Restart=always
+
+[Install]
+# System quadlet -> multi-user.target
+# User quadlet   -> default.target
+WantedBy=multi-user.target

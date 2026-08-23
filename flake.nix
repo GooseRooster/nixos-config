@@ -48,6 +48,10 @@
     # Declarative disk partitioning/formatting (btrfs layout for the host).
     disko.url = "github:nix-community/disko/latest";
     disko.inputs.nixpkgs.follows = "nixpkgs";
+
+    # Secure Boot (UKI signing via sbctl). Safe to follow our nixpkgs.
+    lanzaboote.url = "github:nix-community/lanzaboote/v1.1.0";
+    lanzaboote.inputs.nixpkgs.follows = "nixpkgs";
   };
 
   outputs = inputs @ { self, nixpkgs, ... }:

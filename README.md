@@ -18,10 +18,11 @@ and are pulled in as a flake input.
 - `hosts/<name>/` — per-machine entrypoint (hostname, user, flatpaks, kernel, hardware)
 - `flavors/` — high-level combos: `base`, `desktop`, `wsl` (stub)
 - `modules/core/` — cross-flavor system modules (`system`, `kernel`, `perf`,
-  `nix`, `users`, `hardening`, `maintenance`)
+  `nix`, `users`, `hardening`, `maintenance`, `podman`, `secure-boot`)
 - `modules/desktop/` — GNOME + audio/portal/keyring/power modules
 - `modules/flatpak/` — declarative flatpaks, split into toggle-able sets
 - `modules/extras/` — optional host extras (theming)
+- `quadlets/` — example podman quadlet files (system + rootless user templates)
 
 ## Host vs flavor
 
@@ -108,38 +109,73 @@ sudo nixos-rebuild switch --flake .#home
 ## Installing on the host (disko)
 
 The disk layout is declarative (`hosts/home/disko.nix`): a single NVMe with an
-ESP at `/boot` and a btrfs root split into `@` (→ `/`), `@home` (→ `/home`) and
-`@nix` (→ `/nix`) subvolumes, matching `modules/core/snapper.nix`. Swap is
-`zramSwap`, so there's no swap partition. (The layout is currently unencrypted —
-LUKS is planned, see Roadmap.)
+ESP at `/boot` and a LUKS-encrypted btrfs root split into `@` (→ `/`), `@home`
+(→ `/home`) and `@nix` (→ `/nix`) subvolumes, matching
+`modules/core/snapper.nix`. Swap is `zramSwap`, so there's no swap partition.
+The LUKS container is auto-unlocked by the TPM2 with a passphrase fallback (see
+[Secure Boot & LUKS](#secure-boot--luks-tpm2) below).
 
 ### First install (host never installed before)
 
-Boot the NixOS minimal ISO, then:
+Boot the **graphical** NixOS ISO (GNOME — you want the browser for the GitHub
+step below), connect to Wi-Fi, then enable flakes if the ISO doesn't:
+`nix --extra-experimental-features 'nix-command flakes'`.
 
 ```sh
-# 1) get the config (install git first if the ISO lacks it: nix-shell -p git)
-git clone https://github.com/GooseRooster/nixos-config.git
+# 1) generate a hardware config (hardware only — disko supplies fileSystems),
+#    and read the state version from the generated configuration.nix
+nixos-generate-config --no-filesystems
+#    → system.stateVersion in /etc/nixos/configuration.nix (e.g. "26.05")
+
+# 2) create an ephemeral SSH key (dies with the live ISO — that's fine) and
+#    add it to GitHub via the browser (Settings → SSH keys). No long PAT needed.
+ssh-keygen -t ed25519 -N "" -f ~/.ssh/id_ed25519
+cat ~/.ssh/id_ed25519.pub   # copy into github.com → add key
+eval "$(ssh-agent -s)" && ssh-add ~/.ssh/id_ed25519
+
+# 3) clone over SSH (the origin is already SSH)
+git clone git@github.com:GooseRooster/nixos-config.git
 cd nixos-config
 
-# 2) find your disk's stable /dev/disk/by-id path
+# 4) find your disk's stable /dev/disk/by-id path
 lsblk -o PATH,MODEL,SERIAL,SIZE
-#    → put it in hosts/<host>/disko.nix  (device = "/dev/disk/by-id/nvme-...")
 
-# 3) generate the hardware config on the live system (hardware only — disko
-#    supplies fileSystems), and copy it into the repo
-nixos-generate-config --no-filesystems
-cp /etc/nixos/hardware-configuration.nix hosts/<host>/hardware-configuration.nix
+# 5) copy the hardware config in, set the disk device, confirm the state
+#    version, then commit and push (SSH key auth — nothing to type)
+cp /etc/nixos/hardware-configuration.nix hosts/home/hardware-configuration.nix
+#    → set `device` in hosts/home/disko.nix
+#    → set `system.stateVersion` in hosts/home/default.nix
+git commit -am "home: hardware config + disk device"
+git push
 
-# 4) one-shot install: partition + format + mount + nixos-install, from the local flake
-sudo nix run github:nix-community/disko/latest#disko-install -- --flake .#<host>
+# 6) one-shot install: partition + format + mount + nixos-install + bootloader,
+#    from the pushed flake (NOT the local clone). LUKS prompts for its passphrase.
+sudo nix run github:nix-community/disko/latest#disko-install -- \
+  --flake github:GooseRooster/nixos-config#home
 ```
 
 `disko-install` replaces the manual partitioning from the minimal-install
-instructions. `--disk <name> <device>` is an *optional* override that sets
-`disko.devices.disk.<name>.device` from the command line (e.g.
-`--disk main /dev/nvme0n1`) instead of editing `disko.nix`; prefer putting the
-real `by-id` path in `disko.nix` so later `nixos-rebuild` uses the same device.
+instructions — it runs `disko` (destroy/format/mount) and then `nixos-install`
+and the bootloader install, all in one. You don't need to run any other
+installer steps first.
+
+Notes:
+
+- If `git` isn't on the ISO: `nix-shell -p git`.
+- The installer SSH key is ephemeral — you can remove it from GitHub afterward
+  (or leave it; it dies with the live ISO). Prefer a normal account key over a
+  long-lived PAT.
+- Don't want to push from the installer at all? Install off the local clone
+  (`--flake .#home`) and push from the installed system afterward — auto-upgrade
+  is weekly, so there's plenty of time before the GitHub URL is exercised.
+- `--disk <name> <device>` is an *optional* override that sets
+  `disko.devices.disk.<name>.device` from the command line (e.g.
+  `--disk main /dev/nvme0n1`) instead of editing `disko.nix`; prefer putting the
+  real `by-id` path in `disko.nix` so later `nixos-rebuild` uses the same device.
+- Install from the **GitHub URL**, not the local clone — it guarantees a clean,
+  committed config and matches the `autoUpgrade` flake.
+- On first boot the LUKS container still asks for the passphrase (the TPM2
+  token isn't enrolled yet) — that's expected.
 
 To partition/format *without* installing (e.g. to re-image a borked disk), run:
 
@@ -147,6 +183,66 @@ To partition/format *without* installing (e.g. to re-image a borked disk), run:
 sudo nix run github:nix-community/disko/latest -- \
   --mode disko --flake github:GooseRooster/nixos-config#home
 ```
+
+## Secure Boot & LUKS/TPM2
+
+These two are *post-install* steps and should be done in order.
+
+### Secure Boot (Lanzaboote)
+
+The plumbing lives in `modules/core/secure-boot.nix`, behind
+`modules.secureBoot.enable` (default `false`). It is intentionally disabled
+during install — `lzbt` can't sign UKIs until `sbctl` keys exist.
+
+After the first successful boot:
+
+```sh
+# 1) generate the Secure Boot keys
+sudo sbctl create-keys
+```
+
+Then set `modules.secureBoot.enable = true;` in `hosts/home/default.nix`, rebuild,
+and verify:
+
+```sh
+sudo nixos-rebuild switch --flake .#home
+sudo sbctl verify
+```
+
+Next, reboot into firmware, enter Secure Boot **Setup Mode** (or erase the
+Platform Key), boot back, and enroll:
+
+```sh
+sudo sbctl enroll-keys --microsoft   # --firmware-builtin on some boards (e.g. Framework)
+```
+
+Reboot — Secure Boot is now enforced (`bootctl status` shows `enabled (user)`).
+You need a BIOS password or equivalent to protect the SB policy (out of scope).
+
+### LUKS TPM2 auto-unlock
+
+Enroll the TPM2 token **after** Secure Boot is on, because PCR 7 seals against
+the Secure Boot state:
+
+```sh
+sudo systemd-cryptenroll --tpm2-device=auto --tpm2-pcrs=0+7 \
+  /dev/disk/by-partlabel/disk-main-luks
+```
+
+Reboot and the disk should unlock without a passphrase. The passphrase remains
+as a fallback (and is required after any BIOS/Secure Boot change, which
+invalidates PCR 7 — re-enroll with the same command). `boot.initrd.systemd.enable`
+is set in `modules/core/system.nix`, which TPM2 unlock requires.
+
+## Power management
+
+- **Sleep / suspend-to-RAM** works out of the box via GNOME + systemd-logind —
+  no config needed.
+- **Hibernation** is *not* currently enabled: it requires a persistent on-disk
+  swap target, and this host uses `zramSwap` only. If you want it later, add a
+  LUKS-encrypted swap partition (or a `nodatacow` btrfs swapfile) sized ≥ RAM
+  and wire `boot.resumeDevice` (+ `resume_offset` for a swapfile).
+
 
 
 ## Cheatsheet
@@ -208,9 +304,8 @@ sudo passwd gooze
     fresh lock file.
   - Using Determinate Systems actions (`determinate-nix-action`,
     `magic-nix-cache-action`, `update-flake-lock`).
-- **Secure Boot** (e.g. Lanzaboote) on the host machine.
-- **LUKS encryption** — add a `luks` layer to `hosts/home/disko.nix` (currently
-  plain btrfs) and wire `boot.initrd.luks.devices`. Pair with Secure Boot.
+- **Hibernation** — add an encrypted on-disk swap target and `boot.resumeDevice`
+  (see [Power management](#power-management)).
 - **`home` hardware config** — generate and commit the real
   `hosts/home/hardware-configuration.nix` (currently a placeholder; it blocks a
   full `nix flake check` until filled in). Disko already supplies the
