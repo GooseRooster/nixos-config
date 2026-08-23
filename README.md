@@ -93,8 +93,7 @@ are installed from Flathub by default.
 ## GNOME Shell extensions
 
 Extensions are installed declaratively in `modules/desktop/gnome-extensions.nix`
-via `pkgs.gnomeExtensions`. They are *enabled* manually with the
-`com.mattjakeman.ExtensionManager` flatpak (or `gnome-extensions enable <uuid>`).
+via `pkgs.gnomeExtensions`. 
 
 Some extensions are pulled in as custom flakes if they are not available on EGO.
 
