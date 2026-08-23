@@ -48,7 +48,6 @@
     "org.gnome.clocks"
     "org.gnome.font-viewer"
     "org.gnome.seahorse.Application"
-    "org.mozilla.firefox"
     "org.mozilla.thunderbird_esr"
     "com.usebottles.bottles"
     "com.protonvpn.www"

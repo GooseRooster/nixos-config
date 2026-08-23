@@ -14,6 +14,11 @@ in
     #
     # `/nix` is intentionally NOT snapshotted: Nix generations already provide
     # store rollback, and snapshotting the store wastes space for no benefit.
+    #
+    # Layout-agnostic: this snapshots by mountpoint, so it works with both the
+    # graphical installer's btrfs layout (`home` and `nix` subvolumes, root on
+    # the top-level subvolume) and any `@`-prefixed layout. Only `/` and `/home`
+    # are snapshotted; `/nix` never is.
     system.activationScripts.snapper-subvols = lib.stringAfter [ "users" ] ''
       for sub in "/" "/home"; do
         if [ ! -e "$sub/.snapshots" ]; then

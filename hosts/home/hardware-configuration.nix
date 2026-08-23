@@ -13,6 +13,35 @@
   boot.kernelModules = [ "kvm-amd" ];
   boot.extraModulePackages = [ ];
 
+  fileSystems."/" =
+    { device = "/dev/mapper/luks-0aa5735d-f6a5-48b4-81f3-26ad5630837f";
+      fsType = "btrfs";
+    };
+
+  boot.initrd.luks.devices."luks-0aa5735d-f6a5-48b4-81f3-26ad5630837f".device = "/dev/disk/by-uuid/0aa5735d-f6a5-48b4-81f3-26ad5630837f";
+
+  fileSystems."/home" =
+    { device = "/dev/mapper/luks-0aa5735d-f6a5-48b4-81f3-26ad5630837f";
+      fsType = "btrfs";
+      options = [ "subvol=home" ];
+    };
+
+  fileSystems."/nix" =
+    { device = "/dev/mapper/luks-0aa5735d-f6a5-48b4-81f3-26ad5630837f";
+      fsType = "btrfs";
+      options = [ "subvol=nix" ];
+    };
+
+  fileSystems."/boot" =
+    { device = "/dev/disk/by-uuid/FC75-2A3E";
+      fsType = "vfat";
+      options = [ "fmask=0077" "dmask=0077" ];
+    };
+
+  swapDevices =
+    [ { device = "/dev/mapper/luks-cef99b37-a347-4432-be60-8d04312cf661"; }
+    ];
+
   nixpkgs.hostPlatform = lib.mkDefault "x86_64-linux";
   hardware.cpu.amd.updateMicrocode = lib.mkDefault config.hardware.enableRedistributableFirmware;
 }

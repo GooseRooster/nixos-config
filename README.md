@@ -3,7 +3,7 @@
 Flake-based NixOS configuration for a Flatpak-first, bluefin-like GNOME desktop:
 
 - **Desktop**: minimal [GNOME](https://www.gnome.org) (GDM, Wayland-only)
-- **Apps**: declarative Flatpaks (see `modules/flatpak/`), GNOME core apps disabled
+- **Apps**: declarative Flatpaks (see `modules/flatpak/`), GNOME core apps disabled; Firefox is native (`programs.firefox`, not a Flatpak)
 - **Shell extensions**: declaratively installed via `pkgs.gnomeExtensions`
 - **Kernel**: [CachyOS](https://github.com/xddxdd/nix-cachyos-kernel) by default,
   with a per-host fallback to the plain nixpkgs kernel
@@ -90,6 +90,9 @@ Declarative installs are handled by [nix-flatpak](https://github.com/gmodena/nix
 (nixpkgs removed its own `services.flatpak.packages` option). Application IDs
 are installed from Flathub by default.
 
+Firefox is the exception: it is installed natively via `programs.firefox.enable`
+in `modules/desktop/gnome.nix`, not as a Flatpak.
+
 ## GNOME Shell extensions
 
 Extensions are installed declaratively in `modules/desktop/gnome-extensions.nix`
@@ -105,83 +108,77 @@ sudo nixos-rebuild switch --flake .#vm
 sudo nixos-rebuild switch --flake .#home
 ```
 
-## Installing on the host (disko)
+## Installing on the host (graphical installer)
 
-The disk layout is declarative (`hosts/home/disko.nix`): a single NVMe with an
-ESP at `/boot` and a LUKS-encrypted btrfs root split into `@` (→ `/`), `@home`
-(→ `/home`) and `@nix` (→ `/nix`) subvolumes, matching
-`modules/core/snapper.nix`. Swap is `zramSwap`, so there's no swap partition.
-The LUKS container is auto-unlocked by the TPM2 with a passphrase fallback (see
-[Secure Boot & LUKS](#secure-boot--luks-tpm2) below).
+The disk is set up by the **graphical** NixOS installer (GNOME ISO): a single
+NVMe with an ESP at `/boot`, a LUKS-encrypted btrfs root with `home` and `nix`
+subvolumes, and a separate encrypted swap partition. The flake's
+`modules/core/snapper.nix` snapshots `/` and `/home` (skipping `/nix`), which
+matches that layout.
 
-### First install (host never installed before)
+### 1. Install with the graphical installer
 
-Boot the **graphical** NixOS ISO (GNOME — you want the browser for the GitHub
-step below), connect to Wi-Fi, then enable flakes if the ISO doesn't:
-`nix --extra-experimental-features 'nix-command flakes'`.
+Boot the GNOME ISO and run the graphical installer:
 
-```sh
-# 1) generate a hardware config (hardware only — disko supplies fileSystems),
-#    and read the state version from the generated configuration.nix
-nixos-generate-config --no-filesystems
-#    → system.stateVersion in /etc/nixos/configuration.nix (e.g. "26.05")
+- Choose **GNOME** and, when prompted, **btrfs** as the filesystem (with LUKS
+  encryption — recommended). Use *erase disk* (or manual partitioning); the
+  installer creates `home` and `nix` subvolumes plus an encrypted swap
+  partition.
+- Create a normal user named **`gooze`** and set its password. This password
+  becomes the login + `sudo` password and is **reused as-is** by the flake — the
+  flake declares the user with no password option, so `users.mutableUsers`
+  (the default) leaves the installer password untouched.
+- Finish and reboot into the installed system.
 
-# 2) create an ephemeral SSH key (dies with the live ISO — that's fine) and
-#    add it to GitHub via the browser (Settings → SSH keys). No long PAT needed.
-ssh-keygen -t ed25519 -N "" -f ~/.ssh/id_ed25519
-cat ~/.ssh/id_ed25519.pub   # copy into github.com → add key
-eval "$(ssh-agent -s)" && ssh-add ~/.ssh/id_ed25519
-
-# 3) clone over SSH (the origin is already SSH)
-git clone git@github.com:GooseRooster/nixos-config.git
-cd nixos-config
-
-# 4) find your disk's stable /dev/disk/by-id path
-ls -la /dev/disk/by-id/nvme-*
-
-# 5) copy the hardware config in, set the disk device, confirm the state
-#    version, then commit and push (SSH key auth — nothing to type)
-cp /etc/nixos/hardware-configuration.nix hosts/home/hardware-configuration.nix
-#    → set `device` in hosts/home/disko.nix
-#    → set `system.stateVersion` in hosts/home/default.nix
-git commit -am "home: hardware config + disk device"
-git push
-
-# 6) one-shot install: partition + format + mount + nixos-install + bootloader,
-#    from the pushed flake (NOT the local clone). LUKS prompts for its passphrase.
-sudo nix run github:nix-community/disko/latest#disko-install -- \
-  --flake github:GooseRooster/nixos-config#home
-```
-
-`disko-install` replaces the manual partitioning from the minimal-install
-instructions — it runs `disko` (destroy/format/mount) and then `nixos-install`
-and the bootloader install, all in one. You don't need to run any other
-installer steps first.
-
-Notes:
-
-- If `git` isn't on the ISO: `nix-shell -p git`.
-- The installer SSH key is ephemeral — you can remove it from GitHub afterward
-  (or leave it; it dies with the live ISO). Prefer a normal account key over a
-  long-lived PAT.
-- Don't want to push from the installer at all? Install off the local clone
-  (`--flake .#home`) and push from the installed system afterward — auto-upgrade
-  is weekly, so there's plenty of time before the GitHub URL is exercised.
-- `--disk <name> <device>` is an *optional* override that sets
-  `disko.devices.disk.<name>.device` from the command line (e.g.
-  `--disk main /dev/nvme0n1`) instead of editing `disko.nix`; prefer putting the
-  real `by-id` path in `disko.nix` so later `nixos-rebuild` uses the same device.
-- Install from the **GitHub URL**, not the local clone — it guarantees a clean,
-  committed config and matches the `autoUpgrade` flake.
-- On first boot the LUKS container still asks for the passphrase (the TPM2
-  token isn't enrolled yet) — that's expected.
-
-To partition/format *without* installing (e.g. to re-image a borked disk), run:
+### 2. Clone the flake
 
 ```sh
-sudo nix run github:nix-community/disko/latest -- \
-  --mode disko --flake github:GooseRooster/nixos-config#home
+git clone git@github.com:GooseRooster/nixos-config.git ~/.config/nixos-config
+cd ~/.config/nixos-config
 ```
+
+If the ISO/shell has flakes disabled: `nix --extra-experimental-features 'nix-command flakes'`.
+
+### 3. Copy the hardware configuration
+
+```sh
+sudo cp /etc/nixos/hardware-configuration.nix hosts/home/hardware-configuration.nix
+```
+
+Then carry over the **swap** LUKS unlock entry — the installer writes it to
+`/etc/nixos/configuration.nix` (not the hardware config), so without it the
+encrypted swap partition won't unlock at boot. Add to `hosts/home/default.nix`:
+
+```nix
+boot.initrd.luks.devices."luks-cef99b37-a347-4432-be60-8d04312cf661".device =
+  "/dev/disk/by-uuid/cef99b37-a347-4432-be60-8d04312cf661";
+```
+
+Confirm `system.stateVersion` in `hosts/home/default.nix` matches the value in
+`/etc/nixos/configuration.nix` (it is already `"26.05"`).
+
+### 4. Verify the btrfs layout matches the snapshot config
+
+```sh
+sudo btrfs subvolume list /
+```
+
+Expect `home` and `nix` subvolumes (mounted at `/home` and `/nix`); the root
+filesystem is the top-level subvolume. The snapper module snapshots `/` and
+`/home` (skipping `/nix`), which this layout satisfies.
+
+### 5. Switch to the flake
+
+```sh
+sudo nixos-rebuild switch --flake .#home
+```
+
+The first rebuild may need to run **twice** so the CachyOS binary cache
+(substituter) takes effect before the kernel is fetched (see
+[Kernel selection](#kernel-selection)).
+
+After this, the installer-set password still works and `/home/gooze` is
+unchanged — the flake reuses the same account and home directory.
 
 ## Secure Boot & LUKS/TPM2
 
@@ -225,7 +222,7 @@ the Secure Boot state:
 
 ```sh
 sudo systemd-cryptenroll --tpm2-device=auto --tpm2-pcrs=0+7 \
-  /dev/disk/by-partlabel/disk-main-luks
+  /dev/disk/by-uuid/0aa5735d-f6a5-48b4-81f3-26ad5630837f
 ```
 
 Reboot and the disk should unlock without a passphrase. The passphrase remains
@@ -238,7 +235,7 @@ keyslot 0 and is never touched by TPM enrollment, so you can't be locked out as
 long as you remember it. Verify it independently after install:
 
 ```sh
-sudo cryptsetup open --test-passphrase /dev/disk/by-partlabel/disk-main-luks
+sudo cryptsetup open --test-passphrase /dev/disk/by-uuid/0aa5735d-f6a5-48b4-81f3-26ad5630837f
 # → "Key slot 0 unlocked." confirms the passphrase works
 ```
 
@@ -246,10 +243,10 @@ sudo cryptsetup open --test-passphrase /dev/disk/by-partlabel/disk-main-luks
 
 - **Sleep / suspend-to-RAM** works out of the box via GNOME + systemd-logind —
   no config needed.
-- **Hibernation** is *not* currently enabled: it requires a persistent on-disk
-  swap target, and this host uses `zramSwap` only. If you want it later, add a
-  LUKS-encrypted swap partition (or a `nodatacow` btrfs swapfile) sized ≥ RAM
-  and wire `boot.resumeDevice` (+ `resume_offset` for a swapfile).
+- **Hibernation** is *not* currently enabled: it needs `boot.resumeDevice`
+  (+ `resume_offset`). The graphical installer already created an encrypted
+  on-disk swap partition, so only the resume wiring is missing — `zramSwap`
+  remains the preferred (higher-priority) swap target.
 
 
 
@@ -313,11 +310,9 @@ sudo passwd gooze
   - Using Determinate Systems actions (`determinate-nix-action`,
     `magic-nix-cache-action`, `update-flake-lock`).
 - **Hibernation** — add an encrypted on-disk swap target and `boot.resumeDevice`
-  (see [Power management](#power-management)).
-- **`home` hardware config** — generate and commit the real
-  `hosts/home/hardware-configuration.nix` (currently a placeholder; it blocks a
-  full `nix flake check` until filled in). Disko already supplies the
-  `fileSystems`, so generate with `--no-filesystems`.
+  (see [Power management](#power-management)). The graphical-installer swap
+  partition is already on disk, so this only needs `boot.resumeDevice` +
+  `resume_offset` wiring.
 
 
 ## Adding a host (e.g. WSL)

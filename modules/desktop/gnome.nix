@@ -22,6 +22,9 @@
     pkgs.nautilus
     pkgs.refine
   ];
+
+  # Firefox is native, not Flatpak (the org.mozilla.firefox flatpak was dropped).
+  programs.firefox.enable = true;
   services.gnome.sushi.enable = true;
   xdg.mime.defaultApplications."inode/directory" = "org.gnome.Nautilus.desktop";
 

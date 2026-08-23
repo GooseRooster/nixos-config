@@ -45,10 +45,6 @@
     dotfiles.inputs.nix-cli.follows = "cli";
     dotfiles.inputs.nixpkgs.follows = "nixpkgs";
 
-    # Declarative disk partitioning/formatting (btrfs layout for the host).
-    disko.url = "github:nix-community/disko/latest";
-    disko.inputs.nixpkgs.follows = "nixpkgs";
-
     # Secure Boot (UKI signing via sbctl). Safe to follow our nixpkgs.
     lanzaboote.url = "github:nix-community/lanzaboote/v1.1.0";
     lanzaboote.inputs.nixpkgs.follows = "nixpkgs";
@@ -73,12 +69,6 @@
         modules = [
           ./hosts/home
         ];
-      };
-
-      # Exposed so `disko` can partition/format without a full system build:
-      #   nix run github:nix-community/disko/latest -- --mode disko --flake github:GooseRooster/nixos-config#home
-      diskoConfigurations.home = {
-        imports = [ ./hosts/home/disko.nix ];
       };
     };
 }
