@@ -91,7 +91,7 @@ Declarative installs are handled by [nix-flatpak](https://github.com/gmodena/nix
 are installed from Flathub by default.
 
 Firefox is the exception: it is installed natively via `programs.firefox.enable`
-in `modules/desktop/gnome.nix`, not as a Flatpak.
+in `modules/desktop/gnome.nix`, not as a Flatpak. (Sandboxing reasons)
 
 ## GNOME Shell extensions
 
@@ -103,9 +103,10 @@ Some extensions are pulled in as custom flakes if they are not available on EGO.
 
 ## Apply
 
+Use `boot` option instead of switch when applying for the first time.
+
 ```sh
-sudo nixos-rebuild switch --flake .#vm
-sudo nixos-rebuild switch --flake .#home
+sudo nixos-rebuild boot --flake .#home
 ```
 
 ## Installing on the host (graphical installer)
@@ -124,7 +125,7 @@ Boot the GNOME ISO and run the graphical installer:
   encryption — recommended). Use *erase disk* (or manual partitioning); the
   installer creates `home` and `nix` subvolumes plus an encrypted swap
   partition.
-- Create a normal user named **`gooze`** and set its password. This password
+- Create a normal user named **with a name matching the initial user in your target host** and set its password. This password
   becomes the login + `sudo` password and is **reused as-is** by the flake — the
   flake declares the user with no password option, so `users.mutableUsers`
   (the default) leaves the installer password untouched.
@@ -154,7 +155,7 @@ boot.initrd.luks.devices."luks-cef99b37-a347-4432-be60-8d04312cf661".device =
   "/dev/disk/by-uuid/cef99b37-a347-4432-be60-8d04312cf661";
 ```
 
-Confirm `system.stateVersion` in `hosts/home/default.nix` matches the value in
+Confirm `system.stateVersion` in `hosts/<yourhost>/default.nix` matches the value in
 `/etc/nixos/configuration.nix` (it is already `"26.05"`).
 
 ### 4. Verify the btrfs layout matches the snapshot config
@@ -170,14 +171,14 @@ filesystem is the top-level subvolume. The snapper module snapshots `/` and
 ### 5. Switch to the flake
 
 ```sh
-sudo nixos-rebuild switch --flake .#home
+sudo nixos-rebuild boot --flake .#<yourhost>
 ```
 
 The first rebuild may need to run **twice** so the CachyOS binary cache
 (substituter) takes effect before the kernel is fetched (see
 [Kernel selection](#kernel-selection)).
 
-After this, the installer-set password still works and `/home/gooze` is
+After this, the installer-set password still works and `/home/<youruser>` is
 unchanged — the flake reuses the same account and home directory.
 
 ## Secure Boot & LUKS/TPM2
@@ -197,11 +198,11 @@ After the first successful boot:
 sudo sbctl create-keys
 ```
 
-Then set `modules.secureBoot.enable = true;` in `hosts/home/default.nix`, rebuild,
+Then set `modules.secureBoot.enable = true;` in `hosts/<yourhost>/default.nix`, rebuild,
 and verify:
 
 ```sh
-sudo nixos-rebuild switch --flake .#home
+sudo nixos-rebuild switch --flake .#<yourhost>
 sudo sbctl verify
 ```
 
@@ -215,29 +216,6 @@ sudo sbctl enroll-keys --microsoft   # --firmware-builtin on some boards (e.g. F
 Reboot — Secure Boot is now enforced (`bootctl status` shows `enabled (user)`).
 You need a BIOS password or equivalent to protect the SB policy (out of scope).
 
-### LUKS TPM2 auto-unlock
-
-Enroll the TPM2 token **after** Secure Boot is on, because PCR 7 seals against
-the Secure Boot state:
-
-```sh
-sudo systemd-cryptenroll --tpm2-device=auto --tpm2-pcrs=0+7 \
-  /dev/disk/by-uuid/0aa5735d-f6a5-48b4-81f3-26ad5630837f
-```
-
-Reboot and the disk should unlock without a passphrase. The passphrase remains
-as a fallback (and is required after any BIOS/Secure Boot change, which
-invalidates PCR 7 — re-enroll with the same command). `boot.initrd.systemd.enable`
-is set in `modules/core/system.nix`, which TPM2 unlock requires.
-
-Safety check before any of this: the passphrase you set at install is LUKS
-keyslot 0 and is never touched by TPM enrollment, so you can't be locked out as
-long as you remember it. Verify it independently after install:
-
-```sh
-sudo cryptsetup open --test-passphrase /dev/disk/by-uuid/0aa5735d-f6a5-48b4-81f3-26ad5630837f
-# → "Key slot 0 unlocked." confirms the passphrase works
-```
 
 ## Power management
 
