@@ -20,16 +20,16 @@
   boot.initrd.luks.devices."luks-cef99b37-a347-4432-be60-8d04312cf661".device =
     "/dev/disk/by-uuid/cef99b37-a347-4432-be60-8d04312cf661";
 
-  modules.users.primary = "goose";
+  modules.users.primary = "gooze";
 
-  # A declarative user, separate from the throwaway account created during the
-  # graphical install. `initialPassword` only applies while the account has no
-  # password set, so `passwd goose` can replace it after first boot.
-  modules.users.initialPassword = "changeme";
+  # Pin the UID to the account the graphical installer created (first normal
+  # user = 1000). Without this, renaming `primary` would silently create a new
+  # uid and orphan the existing home + keyring.
+  modules.users.uid = 1000;
 
   # Home dotfiles (the GooseRooster/home-manager repo). Flags mirror the
   # system-side flatpak/theming toggles below.
-  home-manager.users.goose = {
+  home-manager.users.gooze = {
     imports = [ inputs.dotfiles.hmModules.default ];
     home.modules.gaming.enable = true;
     home.modules.theming.enable = true;

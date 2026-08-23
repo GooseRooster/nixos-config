@@ -53,21 +53,33 @@ is fetched.
 ## Users are declarative
 
 Users are declared per host via `modules/users.nix`. Set
-`modules.users.primary = "goose"` (or a per-host name) and the module creates a
+`modules.users.primary = "gooze"` (or a per-host name) and the module creates a
 normal user with the groups supplied by the flavor.
 
-The declarative user is separate from the throwaway account you create during
-the graphical install, so it gets a clean `/home/<user>` and keyring. By
-default no password is declared — with `users.mutableUsers = true` (the
-default) set it imperatively after first boot:
+Use the **same name** for the account you create in the graphical installer, so
+the flake reuses that account (same uid, same `/home`, same keyring) instead of
+creating a second one. Pin the uid to make that explicit and to turn a future
+rename into a loud conflict rather than silent uid drift:
 
-```sh
-sudo passwd goose
+```nix
+modules.users.primary = "gooze";
+modules.users.uid = 1000;   # first normal user from the installer
 ```
 
-For first-boot convenience (and for the VM, where you need to log in before
-you can `passwd`), set a throwaway password that only applies while the account
-has none:
+By default no password is declared — with `users.mutableUsers = true` (the
+default) the installer-set password is left untouched and keeps working after
+the rebuild.
+
+> **Keyring gotcha:** the login keyring is encrypted with your login password
+> and only auto-unlocks at login while the two still match. Change the password
+> via **GNOME Settings → Users** (which updates the keyring), not `passwd` —
+> `passwd` bypasses `pam_gnome_keyring` and leaves the keyring locked to the old
+> password. If they ever desync, log in and reset the keyring with
+> `rm ~/.local/share/keyrings/login.keyring` (or set the keyring password back
+> to match).
+
+For the VM, where you need to log in before you can `passwd`, set a throwaway
+password that only applies while the account has none:
 
 ```nix
 modules.users.initialPassword = "changeme";
@@ -128,8 +140,10 @@ Boot the GNOME ISO and run the graphical installer:
   encryption — recommended). Use *erase disk* (or manual partitioning); the
   installer creates `home` and `nix` subvolumes plus an encrypted swap
   partition.
-- Create a **throwaway** user (any name, e.g. `installer`) — the flake declares
-  its own user (e.g. `goose`) with a fresh `/home`, so the two never clash.
+- Create a normal user **named the same as your host's `modules.users.primary`**
+  (e.g. `gooze`) and set its password — the flake declares the same user with no
+  password, so `users.mutableUsers` (the default) leaves the installer password
+  untouched and reuses the account as-is.
   **Still set a root password** during the install.
 - Finish and reboot into the installed system.
 
@@ -180,9 +194,9 @@ The first rebuild may need to run **twice** so the CachyOS binary cache
 (substituter) takes effect before the kernel is fetched (see
 [Kernel selection](#kernel-selection)).
 
-After this, log in as the declarative user (e.g. `goose`, password `changeme`
-if `modules.users.initialPassword` is set) — the throwaway installer user is
-unused and can be left behind.
+After this, log in as the declarative user (e.g. `gooze`) with the password you
+set during the install — the flake reused the same account, so nothing needs
+migrating.
 
 ### 6. Re-run Home Manager activation if it was offline
 
@@ -290,7 +304,7 @@ sudo nix-collect-garbage --delete-older-than 30d
 fwupdmgr get-updates
 
 # Set the declarative user's password (first boot)
-sudo passwd goose
+sudo passwd gooze
 ```
 
 ## Roadmap

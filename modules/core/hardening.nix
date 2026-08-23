@@ -44,7 +44,7 @@ in
     };
 
     # SSH: key-only, no root login. NOTE: this means the VM's initial
-    # `ssh goose@<vm-ip>` with a password no longer works — provision an SSH
+    # `ssh gooze@<vm-ip>` with a password no longer works — provision an SSH
     # key first, or comment this block out while testing.
     services.openssh.settings = {
       PasswordAuthentication = false;
