@@ -137,7 +137,7 @@ git clone git@github.com:GooseRooster/nixos-config.git
 cd nixos-config
 
 # 4) find your disk's stable /dev/disk/by-id path
-lsblk -o PATH,MODEL,SERIAL,SIZE
+ls -la /dev/disk/by-id/nvme-*
 
 # 5) copy the hardware config in, set the disk device, confirm the state
 #    version, then commit and push (SSH key auth — nothing to type)

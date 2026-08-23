@@ -12,15 +12,15 @@
 #     /dev/disk/by-partlabel/disk-main-luks
 # Until then (and on any PCR change) the initrd falls back to the passphrase.
 #
-# TODO: replace the `device` with your disk's stable path:
-#   lsblk -o PATH,MODEL,SERIAL,SIZE
+# replace the `device` with your disk's stable path:
+#   ls -la /dev/disk/by-id/nvme-*
 # e.g. device = "/dev/disk/by-id/nvme-WD_BLACK_SN850X_1234567890";
 {
   disko.devices = {
     disk = {
       main = {
         type = "disk";
-        device = "/dev/disk/by-id/nvme-REPLACE_ME";
+        device = "/dev/disk/by-id/nvme-Sabrent_SB-ROCKET-NVMe4-1TB_48790459504458";
         content = {
           type = "gpt";
           partitions = {
