@@ -40,8 +40,8 @@
   # No bluetooth hardware in this VM.
   hardware.bluetooth.enable = false;
 
-  # Plain nixpkgs kernel for the VM (faster, no cachyos cache/build needed).
-  # This also exercises the per-flavor kernel fallback path.
+  # Plain nixpkgs kernel for the VM. `latest` is the default, but set it here
+  # explicitly to document the per-flavor kernel selection path.
   modules.kernel.variant = "latest";
 
   # GNOME in Boxes needs 3D acceleration (virtio-gpu / virgl) enabled in the

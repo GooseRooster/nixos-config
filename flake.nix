@@ -1,13 +1,8 @@
 {
-  description = "NixOS — Flatpak-first GNOME desktop + CLI batteries (CachyOS kernel)";
+  description = "NixOS — Flatpak-first GNOME desktop + CLI batteries";
 
   inputs = {
     nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
-
-    # Precompiled CachyOS kernels. `release` branch has a binary cache.
-    # Do NOT override its nixpkgs input (the pinned overlay needs the exact
-    # revision to hit the cache).
-    nix-cachyos-kernel.url = "github:xddxdd/nix-cachyos-kernel/release";
 
     # Declarative flatpak installs (nixpkgs removed services.flatpak.packages).
     nix-flatpak.url = "github:gmodena/nix-flatpak/?ref=latest";

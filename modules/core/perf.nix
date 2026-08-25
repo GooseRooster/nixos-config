@@ -11,7 +11,7 @@ in
     boot.kernel.sysctl = {
       # zram-only swap (no disk swap): prefer compressing anonymous pages over
       # evicting page cache, and read single pages (compressed pages aren't
-      # sequential on disk). Mirrors CachyOS zram values.
+      # sequential on disk). Values inspired by CachyOS zram settings.
       "vm.swappiness" = 150;
       "vm.page-cluster" = 0;
 
@@ -24,7 +24,7 @@ in
       "vm.dirty_bytes" = 268435456;
       "vm.dirty_writeback_centisecs" = 1500;
 
-      # Network + fs limits (CachyOS values).
+      # Network + fs limits (inspired by CachyOS values).
       "net.core.default_qdisc" = "fq";
       "net.ipv4.tcp_congestion_control" = "bbr";
       "net.core.netdev_max_backlog" = 4096;
@@ -32,7 +32,7 @@ in
     };
 
     # I/O scheduler: bfq for rotational disks, mq-deadline for SATA SSDs/eMMC,
-    # kyber for NVMe (CachyOS assignment). No-op on the virtio disks of VMs.
+    # kyber for NVMe (assignment inspired by CachyOS). No-op on the virtio disks of VMs.
     services.udev.extraRules = ''
       ACTION=="add|change", KERNEL=="sd[a-z]*", ATTR{queue/rotational}=="1", ATTR{queue/scheduler}="bfq"
       ACTION=="add|change", KERNEL=="sd[a-z]*|mmcblk[0-9]*", ATTR{queue/rotational}=="0", ATTR{queue/scheduler}="mq-deadline"

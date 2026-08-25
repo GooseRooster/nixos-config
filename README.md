@@ -5,8 +5,8 @@ Flake-based NixOS configuration for a Flatpak-first, bluefin-like GNOME desktop:
 - **Desktop**: minimal [GNOME](https://www.gnome.org) (GDM, Wayland-only)
 - **Apps**: declarative Flatpaks (see `modules/flatpak/`), GNOME core apps disabled; Firefox is native (`programs.firefox`, not a Flatpak)
 - **Shell extensions**: declaratively installed via `pkgs.gnomeExtensions`
-- **Kernel**: [CachyOS](https://github.com/xddxdd/nix-cachyos-kernel) by default,
-  with a per-host fallback to the plain nixpkgs kernel
+- **Kernel**: nixpkgs kernel by default (`linuxPackages_latest`),
+  with a per-host `latest` | `lts` fallback
 - **Hardening**: moderate kernel/sudo/ssh hardening (`modules/core/hardening.nix`)
 - **Maintenance**: automatic GC + store optimisation + fwupd
 
@@ -37,18 +37,15 @@ theming.
 
 ## Kernel selection
 
-`modules/core/kernel.nix` exposes `modules.kernel.variant` (`cachyos` |
-`latest` | `lts`) and `modules.kernel.cachyosFlavor`. Set per-host:
+`modules/core/kernel.nix` exposes `modules.kernel.variant` (`latest` | `lts`),
+defaulting to `latest`. Set per-host:
 
 ```nix
-modules.kernel.variant = "latest";                      # plain nixpkgs kernel
-modules.kernel.cachyosFlavor = "linuxPackages-cachyos-latest-zen4"; # tuned build
+modules.kernel.variant = "lts";   # plain nixpkgs LTS kernel
 ```
 
-The CachyOS kernel comes from the `nix-cachyos-kernel` flake input (binary
-cache configured in `modules/core/nix.nix`). When first enabling CachyOS on a
-host, run a rebuild twice so the new substituter takes effect before the kernel
-is fetched.
+`latest` maps to `pkgs.linuxPackages_latest`; `lts` maps to
+`pkgs.linuxPackages`. Nothing else needs configuring.
 
 ## Users are declarative
 
@@ -190,10 +187,6 @@ filesystem is the top-level subvolume. The snapper module snapshots `/` and
 sudo nixos-rebuild boot --flake .#<yourhost>
 ```
 
-The first rebuild may need to run **twice** so the CachyOS binary cache
-(substituter) takes effect before the kernel is fetched (see
-[Kernel selection](#kernel-selection)).
-
 After this, log in as the declarative user (e.g. `gooze`) with the password you
 set during the install — the flake reused the same account, so nothing needs
 migrating.
@@ -287,7 +280,6 @@ nix flake update
 # Update a single input
 nix flake update nixpkgs
 nix flake update cli
-nix flake update nix-cachyos-kernel
 
 # Sanity-check the flake before committing
 nix flake check

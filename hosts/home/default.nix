@@ -52,9 +52,6 @@
   # btrfs snapshots of / and /home (rollback for data, unlike Nix generations).
   modules.snapper.enable = true;
 
-  # CachyOS kernel tuned for this host's AMD Ryzen 7 7800X3D (Zen 4).
-  modules.kernel.cachyosFlavor = "linuxPackages-cachyos-latest-zen4";
-
   # Stage weekly upgrades in the bootloader (no live switch); reboot to apply.
   modules.autoUpgrade.enable = true;
   modules.autoUpgrade.flake = "github:GooseRooster/nixos-config#home";
