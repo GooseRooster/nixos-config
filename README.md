@@ -67,13 +67,6 @@ By default no password is declared — with `users.mutableUsers = true` (the
 default) the installer-set password is left untouched and keeps working after
 the rebuild.
 
-> **Keyring gotcha:** the login keyring is encrypted with your login password
-> and only auto-unlocks at login while the two still match. Change the password
-> via **GNOME Settings → Users** (which updates the keyring), not `passwd` —
-> `passwd` bypasses `pam_gnome_keyring` and leaves the keyring locked to the old
-> password. If they ever desync, log in and reset the keyring with
-> `rm ~/.local/share/keyrings/login.keyring` (or set the keyring password back
-> to match).
 
 For the VM, where you need to log in before you can `passwd`, set a throwaway
 password that only applies while the account has none:
@@ -207,11 +200,9 @@ It's safe to re-run (each step skips itself once done; a failed offline step
 retries cleanly next time). See the home-manager README's **Bootstrap** section
 for details.
 
-## Secure Boot & LUKS/TPM2
 
-These two are *post-install* steps and should be done in order.
 
-### Secure Boot (Lanzaboote)
+## Secure Boot (Lanzaboote)
 
 The plumbing lives in `modules/core/secure-boot.nix`, behind
 `modules.secureBoot.enable` (default `false`). It is intentionally disabled
@@ -259,7 +250,15 @@ Boot toggle misleadingly. The settings that matter:
 - **Administrator password**: set one and disable **Fast Boot** — some ASUS
   boards won't expose or accept Secure Boot key enrollment without it.
 - Enroll with `--microsoft`, **not** `--firmware-builtin` (the latter breaks
-  enrollment on ASUS).
+  enrollment on ASUS). If enrollment fails with
+  `File is immutable: /sys/firmware/efi/efivars/...`, the firmware marked
+  `KEK`/`db` immutable in `efivarfs` — pass `--ignore-immutable`:
+
+  ```sh
+  sudo sbctl enroll-keys --microsoft --ignore-immutable
+  ```
+
+  (`chattr` is not needed; `--ignore-immutable` un-sets the flag itself.)
 - After enrolling, leave OS Type = "Windows UEFI Mode" and Secure Boot Mode =
   "Custom". Switching Secure Boot Mode back to "Standard" silently restores the
   factory keys and undoes your enrollment.
