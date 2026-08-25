@@ -30,8 +30,9 @@ in
       "page_alloc.shuffle=1" # randomize page allocator freelists
     ];
 
-    # Prevent loading kernel modules post-boot and protect the kernel image.
-    security.lockKernelModules = true;
+    # Protect the kernel image (read-only rodata/text). Module loading is left
+    # enabled: lockKernelModules is too brittle for a desktop (it breaks lazy
+    # loading of af_packet and other on-demand modules).
     security.protectKernelImage = true;
 
     # Flatpak (bwrap) and the nix sandbox both need user namespaces.
