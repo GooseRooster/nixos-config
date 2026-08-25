@@ -9,6 +9,7 @@
     ../../modules/flatpak/multimedia.nix
     ../../modules/extras/theming.nix
     ../../modules/extras/tuned.nix
+    ../../modules/gaming/game-performance.nix
     ../../modules/core/secure-boot.nix
     inputs.home-manager.nixosModules.home-manager
   ];
@@ -35,6 +36,32 @@
     home.modules.gaming.enable = true;
     home.modules.theming.enable = true;
     home.modules.podmanAlias.enable = true;
+
+    # nvim/yazi ship `Terminal=true` desktop entries (Exec=nvim/yazi). Override
+    # them here (these land in ~/.local/share/applications, above the system
+    # entries) so they launch through `termapp` instead: ghostty + a bootstrapped
+    # nushell env, not a bare terminal command that skips env.nu.
+    xdg.desktopEntries = {
+      nvim = {
+        name = "Neovim";
+        genericName = "Text Editor";
+        exec = "termapp nvim %F";
+        icon = "nvim";
+        terminal = false;
+        type = "Application";
+        categories = [ "Utility" "TextEditor" "Development" ];
+        mimeType = [ "text/plain" ];
+      };
+      yazi = {
+        name = "Yazi File Manager";
+        exec = "termapp yazi %f";
+        icon = "yazi";
+        terminal = false;
+        type = "Application";
+        categories = [ "System" "FileManager" "FileTools" ];
+        mimeType = [ "inode/directory" ];
+      };
+    };
   };
 
   modules.flatpak.enable = true;
@@ -49,6 +76,10 @@
 
   # TuneD power profiles (incl. a custom "gaming" = latency-performance).
   modules.tuned.enable = true;
+
+  # game-performance helper (TuneD profile + Night Light for Steam) on PATH,
+  # plus a flatpak-accessible copy in ~/.local/bin.
+  modules.gamePerformance.enable = true;
 
   # btrfs snapshots of / and /home (rollback for data, unlike Nix generations).
   modules.snapper.enable = true;
