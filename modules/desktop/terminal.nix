@@ -1,19 +1,20 @@
 { config, lib, pkgs, ... }:
 
 let
-  # Launch a terminal app in Ghostty with the nushell environment bootstrapped
-  # (env.nu sets $EDITOR, $SSH_AUTH_SOCK, carapace/zoxide init, etc.). Ghostty's
-  # `-e` sets initial-command, which replaces the `command = nu` shell — so a
-  # bare `ghostty -e nvim` would skip env.nu. Wrapping the command in `nu -c`
-  # restores the bootstrap for .desktop `Terminal=true` entries and GNOME
-  # keyboard shortcuts.
+  # Launch a terminal app in Ghostty with the nushell environment bootstrapped.
+  # Ghostty's `-e` sets initial-command, which replaces the `command = nu` shell,
+  # so a bare `ghostty -e nvim` skips nushell entirely. Wrapping the command in
+  # `nu --login -c` restores the full startup (env.nu sets $EDITOR/$NVIM_PROFILE/
+  # $SSH_AUTH_SOCK, config.nu defines aliases/functions like `y` and sources the
+  # carapace/zoxide/starship integrations). Plain `nu -c` only loads the built-in
+  # default env — not the user's env.nu or config.nu — so `--login` is required.
   termapp = pkgs.writeScriptBin "termapp" ''
     #!/usr/bin/env bash
     set -euo pipefail
     if [ "$#" -eq 0 ]; then
       exec ${pkgs.ghostty}/bin/ghostty
     fi
-    exec ${pkgs.ghostty}/bin/ghostty -e ${pkgs.nushell}/bin/nu -c "$*"
+    exec ${pkgs.ghostty}/bin/ghostty -e ${pkgs.nushell}/bin/nu --login -c "$*"
   '';
 in
 {
