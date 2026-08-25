@@ -16,6 +16,9 @@
     "net.pcsx2.PCSX2"
     "org.DolphinEmu.dolphin-emu"
     "io.github.Faugus.faugus-launcher"
-    "org.winehq.Wine"
+    # Pin the branch: Flathub ships org.winehq.Wine under many branches
+    # (stable-*, wow64-*), and an unpinned `flatpak install` fails with
+    # "Multiple refs match" in non-interactive mode.
+    "org.winehq.Wine//wow64-25.08"
   ];
 }
