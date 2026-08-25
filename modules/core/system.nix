@@ -32,5 +32,7 @@
     openssh
     ppp # pppd, for legacy Fortinet/PPTP VPNs
     sbctl
+    libnotify
+    wl-clipboard
   ];
 }
