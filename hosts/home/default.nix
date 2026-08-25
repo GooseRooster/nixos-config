@@ -9,6 +9,7 @@
     ../../modules/flatpak/multimedia.nix
     ../../modules/extras/theming.nix
     ../../modules/extras/tuned.nix
+    ../../modules/core/secure-boot.nix
     inputs.home-manager.nixosModules.home-manager
   ];
 
@@ -55,6 +56,8 @@
   # Stage weekly upgrades in the bootloader (no live switch); reboot to apply.
   modules.autoUpgrade.enable = true;
   modules.autoUpgrade.flake = "github:GooseRooster/nixos-config#home";
+
+  modules.secureBoot.enable = true;
 
   system.stateVersion = "26.05";
 }
