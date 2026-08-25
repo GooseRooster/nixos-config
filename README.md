@@ -191,20 +191,21 @@ After this, log in as the declarative user (e.g. `gooze`) with the password you
 set during the install — the flake reused the same account, so nothing needs
 migrating.
 
-### 6. Re-run Home Manager activation if it was offline
+### 6. Run the one-time bootstrap
 
 Home Manager activation runs **once at boot** as a system service
-(`home-manager-<user>.service`), not on login. If the network wasn't up yet on
-that first boot (e.g. Wi-Fi wasn't connected before the service ran), the
-network-dependent activation steps (LazyVim clone, `tinty sync`, television
-channels) fail harmlessly and are skipped. Once you're online, re-run them:
+(`home-manager-<user>.service`), not on login. Network-dependent state (LazyVim
+clone, `tinty sync`, television channels) is *not* done there — it's done by a
+single idempotent `bootstrap` command instead, since activation runs before
+networking is up. Once you're logged in and online, run it once:
 
 ```sh
-sudo systemctl restart home-manager-<youruser>.service
+bootstrap
 ```
 
-(or reboot). The steps are idempotent and failure-tolerant, so they complete on
-the next run. Verify with `journalctl -u home-manager-<youruser>.service`.
+It's safe to re-run (each step skips itself once done; a failed offline step
+retries cleanly next time). See the home-manager README's **Bootstrap** section
+for details.
 
 ## Secure Boot & LUKS/TPM2
 
@@ -240,6 +241,41 @@ sudo sbctl enroll-keys --microsoft   # --firmware-builtin on some boards (e.g. F
 
 Reboot — Secure Boot is now enforced (`bootctl status` shows `enabled (user)`).
 You need a BIOS password or equivalent to protect the SB policy (out of scope).
+
+#### ASUS motherboards
+
+ASUS firmware has no explicit "enter Setup Mode" button and names its Secure
+Boot toggle misleadingly. The settings that matter:
+
+- **OS Type** (`Boot → Secure Boot`): set to **"Windows UEFI Mode"**. Despite the
+  name this is what *enables* Secure Boot; **"Other OS"** disables it (that's the
+  factory default, and why `sbctl status` reports `Secure Boot: Disabled` even
+  after enrolling keys).
+- **Secure Boot Mode**: set to **"Custom"** (not "Standard"). Standard ignores
+  your keys and uses the factory ASUS/Microsoft ones.
+- To enroll, put the firmware in Setup Mode by deleting the **Platform Key (PK)**
+  in **Key Management** (this is the "erase the Platform Key" step above). Don't
+  use "Clear All Secure Boot Keys" — it also drops the dbx forbidden list.
+- **Administrator password**: set one and disable **Fast Boot** — some ASUS
+  boards won't expose or accept Secure Boot key enrollment without it.
+- Enroll with `--microsoft`, **not** `--firmware-builtin` (the latter breaks
+  enrollment on ASUS).
+- After enrolling, leave OS Type = "Windows UEFI Mode" and Secure Boot Mode =
+  "Custom". Switching Secure Boot Mode back to "Standard" silently restores the
+  factory keys and undoes your enrollment.
+
+Sanity-check after enrollment — your keys should appear, not `ASUSTeK MotherBoard`:
+
+```sh
+sudo sbctl list-enrolled-keys
+```
+
+> **Unsigned kernels are expected.** Lanzaboote v1.x boots via a signed
+> `systemd-boot` + `lanzastub`; the firmware only verifies those two UEFI apps,
+> and the kernel is loaded by the stub (TPM-measured, not firmware-signed). So
+> `sbctl verify` showing kernels as unsigned is *not* why the BIOS blocks boot —
+> a blocked boot means the firmware is enforcing a key that doesn't match the
+> one Lanzaboote signed with (i.e. your keys were never actually enrolled).
 
 
 ## Power management
