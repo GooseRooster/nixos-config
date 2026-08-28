@@ -24,6 +24,8 @@ jobs:
       - uses: DeterminateSystems/determinate-nix-action@v3
 
       - uses: DeterminateSystems/magic-nix-cache-action@main
+        with:
+          use-flakehub: false # GitHub-native cache only; no FlakeHub account
 
       # Gate: `nix flake check` only evaluates, so build both systems'
       # toplevels against the fresh lock before the PR is opened.
