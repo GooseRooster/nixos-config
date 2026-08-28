@@ -28,6 +28,6 @@ jobs:
 
       - name: Build both hosts
         run: >
-          nix build
+          nix build --no-link
           .#nixosConfigurations.vm.config.system.build.toplevel
           .#nixosConfigurations.home.config.system.build.toplevel

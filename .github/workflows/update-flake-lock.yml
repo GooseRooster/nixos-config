@@ -33,7 +33,7 @@ jobs:
         run: |
           nix flake update
           nix flake check --no-build
-          nix build \
+          nix build --no-link \
             .#nixosConfigurations.vm.config.system.build.toplevel \
             .#nixosConfigurations.home.config.system.build.toplevel
 
