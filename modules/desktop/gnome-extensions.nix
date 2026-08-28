@@ -29,20 +29,22 @@ let
   allExtensions = upstream ++ builtins.attrValues custom;
 in
 {
-  # Declaratively installed GNOME Shell extensions.
-  environment.systemPackages = allExtensions;
+  config = lib.mkIf (config.modules.desktop.session == "gnome") {
+    # Declaratively installed GNOME Shell extensions.
+    environment.systemPackages = allExtensions;
 
-  # Also enabled by default. These are dconf *defaults* (the system-db sits
-  # below the user-db), so the user can still toggle any extension in
-  # Extension Manager. Note `enabled-extensions` is a list-typed key, so any
-  # manual toggle writes the whole list to the user db and overrides these.
-  programs.dconf.profiles.user.databases = [
-    {
-      settings = {
-        "org/gnome/shell" = {
-          enabled-extensions = map (e: e.extensionUuid) allExtensions;
+    # Also enabled by default. These are dconf *defaults* (the system-db sits
+    # below the user-db), so the user can still toggle any extension in
+    # Extension Manager. Note `enabled-extensions` is a list-typed key, so any
+    # manual toggle writes the whole list to the user db and overrides these.
+    programs.dconf.profiles.user.databases = [
+      {
+        settings = {
+          "org/gnome/shell" = {
+            enabled-extensions = map (e: e.extensionUuid) allExtensions;
+          };
         };
-      };
-    }
-  ];
+      }
+    ];
+  };
 }

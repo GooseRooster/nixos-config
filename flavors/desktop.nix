@@ -3,10 +3,13 @@
 {
   imports = [
     ./base.nix
+    ../modules/desktop/session.nix
+    ../modules/desktop/apps.nix
     ../modules/desktop/gnome.nix
     ../modules/desktop/gnome-devtools.nix
-    ../modules/desktop/gnome-extensions.nix
     ../modules/desktop/gnome-settings.nix
+    ../modules/desktop/gnome-extensions.nix
+    ../modules/desktop/noctalia.nix
     ../modules/desktop/terminal.nix
     ../modules/desktop/graphics.nix
     ../modules/desktop/portals.nix
