@@ -136,6 +136,10 @@
             "Mod+Return" = "spawn:termapp";
             "Mod+Q" = "window-close";
 
+            # yazi file manager 
+            "Mod+E" = "spawn:termapp yazi";
+              
+
             # Screenshots (Noctalia's built-in capture over wlr-screencopy).
             "Print" = "spawn:noctalia msg screenshot-region";
             "Mod+Print" = "spawn:noctalia msg screenshot-fullscreen";
@@ -145,7 +149,7 @@
             # <-> tile stays on the packaged Mod+T (window-toggle-floating).
             "Mod+I" = "window-consume-left";
             "Mod+O" = "window-expel-right";
-            "Mod+E" = "overview-toggle";
+            "Mod+Tab" = "overview-toggle";
 
             # Focus (vim directions).
             "Mod+H" = "window-focus-left";
