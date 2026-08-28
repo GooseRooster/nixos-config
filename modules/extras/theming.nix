@@ -18,9 +18,10 @@ in
     # (Noctalia owns the color scheme in the noctalia session).
     programs.gnomad.enable = config.modules.desktop.session == "gnome";
 
-    environment.systemPackages = with pkgs; [
-      tinty
-      gowall
-    ];
+    environment.systemPackages =
+      [ pkgs.gowall ]
+      # tinty is the scheme-switcher for the tinty-based theming flow; in the
+      # noctalia session Noctalia's builtin templates own app theming instead.
+      ++ lib.optional (config.modules.desktop.session != "noctalia") pkgs.tinty;
   };
 }

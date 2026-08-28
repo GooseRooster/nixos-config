@@ -105,6 +105,17 @@
 
           # Lockscreen/notification daemons are built into Noctalia.
           lockscreen.enabled = true;
+
+          # App theming via Noctalia's builtin templates: the rendered
+          # palettes land in writable files (~/.config/ghostty/themes/noctalia,
+          # ~/.config/umbriel/noctalia.toml). The template post-hooks would
+          # also edit ghostty's config / umbriel's config.toml, which are
+          # read-only HM symlinks — pre-seeded below / in the dotfiles ghostty
+          # config so those edits become no-ops.
+          theme.templates = {
+            enable_builtin_templates = true;
+            builtin_ids = [ "ghostty" "umbriel" ];
+          };
         };
       };
 
@@ -112,9 +123,14 @@
         enable = true;
         settings = {
           # Layer our overrides on top of Umbriel's packaged default config
-          # (main-file values win over every include).
+          # (main-file values win over every include). noctalia.toml is the
+          # palette file Noctalia's builtin umbriel template re-renders on
+          # every palette change; listed last so it overrides the packaged
+          # defaults (its template post-hook would otherwise add this entry
+          # itself by rewriting config.toml — impossible on the HM symlink).
           include.files = [
             "${osConfig.programs.umbriel.package}/share/umbriel/config.toml"
+            "noctalia.toml"
           ];
 
           # Auto-start the Noctalia shell with the compositor.
