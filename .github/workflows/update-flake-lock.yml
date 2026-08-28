@@ -1,0 +1,44 @@
+name: update-flake-lock
+
+on:
+  workflow_dispatch:
+  schedule:
+    # Sundays 09:17 UTC — last in the update chain, after the nix-cli and
+    # home-manager PRs have been approved & merged, so their fresh main
+    # branches are what `cli`/`dotfiles` inputs get pinned to. Lands before
+    # the Monday 00:00 local `system.autoUpgrade` ("weekly").
+    - cron: "17 9 * * 0"
+
+permissions:
+  contents: write
+  id-token: write
+  issues: write
+  pull-requests: write
+
+jobs:
+  lockfile:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: DeterminateSystems/determinate-nix-action@v3
+
+      - uses: DeterminateSystems/magic-nix-cache-action@main
+
+      # Gate: `nix flake check` only evaluates, so build both systems'
+      # toplevels against the fresh lock before the PR is opened.
+      - name: Update all inputs and build both hosts
+        run: |
+          nix flake update
+          nix flake check --no-build
+          nix build \
+            .#nixosConfigurations.vm.config.system.build.toplevel \
+            .#nixosConfigurations.home.config.system.build.toplevel
+
+      - name: Open/update PR
+        uses: DeterminateSystems/update-flake-lock@main
+        with:
+          pr-title: "flake.lock: update all inputs"
+          pr-labels: |
+            dependencies
+            automated

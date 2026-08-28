@@ -339,17 +339,21 @@ sudo passwd gooze
 
 ### Planned
 
-- **CI** (`.github/workflows/`, both this repo and `nix-cli`):
-  - `check` — run `nix flake check` / `nix build` on push & PR to gate broken
-    configs.
-  - `update-flake-lock` — scheduled `nix flake update` that opens a PR with the
-    fresh lock file.
-  - Using Determinate Systems actions (`determinate-nix-action`,
-    `magic-nix-cache-action`, `update-flake-lock`).
 - **Hibernation** — add an encrypted on-disk swap target and `boot.resumeDevice`
   (see [Power management](#power-management)). The graphical-installer swap
   partition is already on disk, so this only needs `boot.resumeDevice` +
   `resume_offset` wiring.
+
+### Done
+
+- **CI** (`.github/workflows/`):
+  - `check` — `nix flake check` (builds both hosts) on push & PR.
+  - `update-flake-lock` — Sundays 09:17 UTC: updates all inputs and opens a PR
+    gated on building both hosts. Runs last in the update chain (after
+    `nix-cli` and `home-manager`), so the merged PRs from those repos are what
+    `cli`/`dotfiles` get pinned to. Lands before the Monday 00:00 local
+    `system.autoUpgrade`. Merging the weekly PRs also keeps the schedules
+    alive — GitHub disables cron workflows after 60 days of repo inactivity.
 
 
 ## Adding a host (e.g. WSL)

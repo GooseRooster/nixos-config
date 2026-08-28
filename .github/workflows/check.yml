@@ -1,0 +1,31 @@
+name: check
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: DeterminateSystems/determinate-nix-action@v3
+
+      - uses: DeterminateSystems/magic-nix-cache-action@main
+
+      # `nix flake check` only *evaluates* nixosConfigurations, so build
+      # both systems' toplevels (incl. the HM closure) for a real gate.
+      - name: Check flake
+        run: nix flake check --no-build
+
+      - name: Build both hosts
+        run: >
+          nix build
+          .#nixosConfigurations.vm.config.system.build.toplevel
+          .#nixosConfigurations.home.config.system.build.toplevel
