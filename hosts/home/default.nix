@@ -151,6 +151,14 @@
             "Mod+O" = "window-expel-right";
             "Mod+Tab" = "overview-toggle";
 
+            # Column width: toggle full width <-> previous width, and nudge
+            # the width in 5% steps (clamped 0.1-1.0). Mod+Equal covers the
+            # unshifted + key; Mod+Plus the shifted one.
+            "Mod+F" = "window-toggle-maximize";
+            "Mod+Equal" = "window-modify-width:0.05";
+            "Mod+Plus" = "window-modify-width:0.05";
+            "Mod+Minus" = "window-modify-width:-0.05";
+
             # Focus (vim directions).
             "Mod+H" = "window-focus-left";
             "Mod+J" = "window-focus-down";
