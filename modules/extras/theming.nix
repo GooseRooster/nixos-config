@@ -14,7 +14,9 @@ in
   config = lib.mkIf cfg.enable {
     # `gnomad` is built by its own flake (see ../flake.nix); the module installs
     # the wrapped binary (git/gowall/tinty/gsettings baked into its PATH).
-    programs.gnomad.enable = true;
+    # GNOME-only: its colour-scheme toggles are meaningless outside GNOME
+    # (Noctalia owns the color scheme in the noctalia session).
+    programs.gnomad.enable = config.modules.desktop.session == "gnome";
 
     environment.systemPackages = with pkgs; [
       tinty

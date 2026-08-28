@@ -11,15 +11,11 @@
     # Steam is native now (modules/gaming/steam.nix): Millennium does not
     # support the Flatpak Steam. AdwSteamGtk is gone too — Millennium owns
     # Steam theming.
+    # Wine, winetricks and Faugus Launcher are native too (modules/gaming/wine.nix).
     "com.vysp3r.ProtonPlus"
     "dev.vencord.Vesktop"
     "io.github.ilya_zlobintsev.LACT"
     "net.pcsx2.PCSX2"
     "org.DolphinEmu.dolphin-emu"
-    "io.github.Faugus.faugus-launcher"
-    # Pin the branch: Flathub ships org.winehq.Wine under many branches
-    # (stable-*, wow64-*), and an unpinned `flatpak install` fails with
-    # "Multiple refs match" in non-interactive mode.
-    "org.winehq.Wine//wow64-25.08"
   ];
 }

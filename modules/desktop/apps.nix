@@ -5,9 +5,12 @@
 
 {
   # Nautilus (Files) — the org.gnome.Nautilus flatpak is deprecated, so it
-  # comes from nixpkgs instead. Sushi (previewer) likewise.
+  # comes from nixpkgs instead. Sushi (previewer) likewise. The standalone
+  # home-manager CLI enables fast dotfiles iteration
+  # (`home-manager switch --flake ~/.config/home-manager#desktop`).
   environment.systemPackages = [
     pkgs.nautilus
+    pkgs.home-manager
   ];
 
   services.gnome.sushi.enable = true;

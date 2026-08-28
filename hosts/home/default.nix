@@ -11,6 +11,7 @@
     ../../modules/extras/tuned.nix
     ../../modules/gaming/game-performance.nix
     ../../modules/gaming/steam.nix
+    ../../modules/gaming/wine.nix
     ../../modules/core/secure-boot.nix
     inputs.home-manager.nixosModules.home-manager
   ];
@@ -30,19 +31,28 @@
   # uid and orphan the existing home + keyring.
   modules.users.uid = 1000;
 
-  # Home dotfiles (the GooseRooster/home-manager repo). Flags mirror the
-  # system-side flatpak/theming toggles below.
-  home-manager.users.gooze =
-    { osConfig, lib, ... }:
-    {
-      imports = [
-        inputs.dotfiles.hmModules.default
-        inputs.noctalia.homeModules.default
-        inputs.umbriel.homeModules.default
-      ];
-      home.modules.gaming.enable = true;
-      home.modules.theming.enable = true;
-      home.modules.podmanAlias.enable = true;
+  # Home dotfiles (the GooseRooster/home-manager repo). hmModules.desktop
+  # bundles home.nix + hosts/desktop.nix, which sets the gaming/theming/
+  # podmanAlias flags and the session below is mirrored into it — the
+  # standalone (`home-manager switch`) and integrated tracks stay identical.
+  home-manager = {
+    # Back up (instead of erroring on) pre-existing files when the standalone
+    # and integrated HM generations trade ownership of overlapping paths.
+    backupFileExtension = "hm-backup";
+
+    users.gooze =
+      { osConfig, lib, ... }:
+      {
+        imports = [
+          inputs.dotfiles.hmModules.desktop
+          inputs.noctalia.homeModules.default
+          inputs.umbriel.homeModules.default
+        ];
+
+        # Mirror the NixOS session choice into the dotfiles flags so
+        # session-gated HM content (tinty -> Noctalia hook) follows the
+        # modules.desktop.session option.
+        home.modules.session = osConfig.modules.desktop.session;
 
       # nvim/yazi ship `Terminal=true` desktop entries (Exec=nvim/yazi). Override
       # them here (these land in ~/.local/share/applications, above the system
@@ -110,17 +120,62 @@
           # Auto-start the Noctalia shell with the compositor.
           general.autostart = [ "noctalia" ];
 
-          # Noctalia IPC integration (docs.noctalia.dev) + essentials not in
-          # the packaged defaults.
+          # This host's display: Dell AW3423DWF QD-OLED ultrawide. VRR while
+          # fullscreen, HDR auto-activates on fullscreen surfaces with HDR metadata.
+          output."DP-3" = {
+            mode = "3440x1440@164.9";
+            hdr = "auto";
+            vrr = "fullscreen";
+          };
+
+          # PaperWM-style muscle memory on Umbriel's scrolling layout, plus the
+          # Noctalia IPC integration (docs.noctalia.dev). Overrides of the
+          # packaged defaults win over the included base config.
           keybinds = {
+            # Terminal + window management.
             "Mod+Return" = "spawn:termapp";
-            "Mod+P" = "spawn:noctalia msg screenshot-region";
-            "Mod+Shift+P" = "spawn:noctalia msg screenshot-fullscreen";
+            "Mod+Q" = "window-close";
+
+            # Screenshots (Noctalia's built-in capture over wlr-screencopy).
+            "Print" = "spawn:noctalia msg screenshot-region";
+            "Mod+Print" = "spawn:noctalia msg screenshot-fullscreen";
+
+            # PaperWM immerse/expel: merge the focused window into the column
+            # to its left / push it out into its own new column. True float
+            # <-> tile stays on the packaged Mod+T (window-toggle-floating).
+            "Mod+I" = "window-consume-left";
+            "Mod+O" = "window-expel-right";
+            "Mod+E" = "overview-toggle";
+
+            # Focus (vim directions).
+            "Mod+H" = "window-focus-left";
+            "Mod+J" = "window-focus-down";
+            "Mod+K" = "window-focus-up";
+            "Mod+L" = "window-focus-right";
+
+            # Move window/column within the layout.
+            "Mod+Ctrl+H" = "column-move-left";
+            "Mod+Ctrl+J" = "window-move-down";
+            "Mod+Ctrl+K" = "window-move-up";
+            "Mod+Ctrl+L" = "column-move-right";
+
+            # Move window across workspaces (linear per output: prev/next;
+            # J/K move within the column or across the workspace boundary).
+            "Mod+Shift+H" = "window-move-to-workspace-previous";
+            "Mod+Shift+J" = "window-move-or-workspace-down";
+            "Mod+Shift+K" = "window-move-or-workspace-up";
+            "Mod+Shift+L" = "window-move-to-workspace-next";
+
+            # Switch workspaces.
+            "Mod+Alt+K" = "workspace-previous";
+            "Mod+Alt+J" = "workspace-next";
+
+            # Noctalia panels; lock moved here (Mod+Shift+L is taken above).
             "Mod+V" = "spawn:noctalia msg panel-toggle clipboard";
             "Mod+W" = "spawn:noctalia msg panel-toggle wallpaper";
             "Mod+X" = "spawn:noctalia msg bar-toggle";
             "Mod+Escape" = "spawn:noctalia msg panel-toggle session";
-            "Mod+Shift+L" = "spawn:noctalia msg session lock";
+            "Ctrl+Alt+L" = "spawn:noctalia msg session lock";
 
             "XF86AudioRaiseVolume" = "spawn:noctalia msg volume-up";
             "XF86AudioLowerVolume" = "spawn:noctalia msg volume-down";
@@ -137,6 +192,7 @@
         };
       };
     };
+  };
 
   modules.flatpak.enable = true;
   modules.flatpak.base.enable = true;
@@ -164,6 +220,9 @@
 
   # Native Steam (Millennium-flavoured) instead of the Flatpak Steam.
   modules.steam.enable = true;
+
+  # Native Wine + winetricks + Faugus Launcher instead of their Flatpaks.
+  modules.wine.enable = true;
 
   # Stage weekly upgrades in the bootloader (no live switch); reboot to apply.
   modules.autoUpgrade.enable = true;
