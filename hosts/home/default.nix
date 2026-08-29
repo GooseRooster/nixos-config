@@ -236,6 +236,7 @@
 
             "XF86AudioRaiseVolume" = "spawn:noctalia msg volume-up";
             "XF86AudioLowerVolume" = "spawn:noctalia msg volume-down";
+            "Mod+Down" = "spawn:playerctl play-pause";
             "Mod+XF86AudioMute" = "spawn:wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle";
             "XF86MonBrightnessUp" = {
               action = "spawn:noctalia msg brightness-up 10";
