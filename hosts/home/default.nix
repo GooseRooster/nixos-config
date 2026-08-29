@@ -183,7 +183,7 @@
             "Mod+E" = "spawn:termapp yazi";
               
             # settings
-            "Mod+Shift+I" ="spawn:noctalia msg settings-open"
+            "Mod+Shift+I" ="spawn:noctalia msg settings-open";
 
             # Screenshots (Noctalia's built-in capture over wlr-screencopy).
             "Print" = "spawn:noctalia msg screenshot-region";
