@@ -68,7 +68,35 @@ in
     programs.dconf.enable = true; # gsettings persistence (Noctalia color-scheme sync)
 
     # gtk portal as generic fallback; the umbriel portal module already sets
-    # config.umbriel.default = [ "umbriel" "gtk" ].
-    xdg.portal.extraPortals = [ pkgs.xdg-desktop-portal-gtk ];
+    # config.umbriel.default = [ "umbriel" "gtk" ]. The gnome portal fills the
+    # gaps gtk leaves: it implements Background (flatpaks running in the
+    # background / autostart) and GlobalShortcuts; its mutter-dependent
+    # ScreenCast/RemoteDesktop are explicitly NOT mapped below, so umbriel
+    # keeps those.
+    xdg.portal.extraPortals = [
+      pkgs.xdg-desktop-portal-gtk
+      pkgs.xdg-desktop-portal-gnome
+    ];
+
+    # Explicit interface selection. Explicit portals.conf entries supersede
+    # the (deprecated) UseIn gating in *.portal files, which is why the
+    # gnome-keyring Secret backend (UseIn=gnome upstream) works in this
+    # session. Without the Secret mapping, flatpaks that store credentials
+    # through the portal hang or fail (observed with High Tide).
+    xdg.portal.config.umbriel = {
+      "org.freedesktop.impl.portal.ScreenCast" = [ "umbriel" ];
+      "org.freedesktop.impl.portal.Screenshot" = [ "umbriel" ];
+      "org.freedesktop.impl.portal.Background" = [ "gnome" ];
+      "org.freedesktop.impl.portal.GlobalShortcuts" = [ "gnome" ];
+      "org.freedesktop.impl.portal.Secret" = [ "gnome-keyring" ];
+    };
+
+    # Noctalia's GTK3 template pairs its rendered libadwaita-style
+    # noctalia.css with the adw-gtk3 theme (GTK3 doesn't consume the libadwaita
+    # named colors on its own; the template's apply.sh sets
+    # gtk-theme=adw-gtk3-dark via dconf when the theme is present). GTK4 /
+    # libadwaita apps pick the colors up from ~/.config/gtk-4.0/gtk.css
+    # without it.
+    environment.systemPackages = [ pkgs.adw-gtk3 ];
   };
 }
