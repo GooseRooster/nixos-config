@@ -54,6 +54,28 @@ else
   host() { env -u LD_PRELOAD -u LD_LIBRARY_PATH "$@"; }
 fi
 
+# Steam wraps the WHOLE launch-options command (this script included) in the
+# game's SteamLinuxRuntime container: root on a private tmpfs with the
+# container's own /etc, while /run stays a (slave) bind of the host's. Two
+# consequences: /tmp writes vanish with the container, and /etc/tuned is
+# missing, so tuned-adm dies with "Global TuneD configuration file
+# '/etc/tuned/tuned-main.conf' not found" before it ever reaches the daemon.
+# Everything that matters via the SESSION bus (noctalia IPC, notifications,
+# dconf) works in-container, but TuneD is driven over the SYSTEM bus and
+# needs host /etc — so when this script runs in a container, relay tuned-adm
+# through the user's systemd manager (systemd-run --user), which executes it
+# on the real host. Outside containers /etc/tuned exists and we call it
+# directly.
+tuned() {
+  if [[ -r /etc/tuned/tuned-main.conf ]]; then
+    host "$TUNED_ADM" "$@"
+  elif [[ -x /run/current-system/sw/bin/systemd-run ]]; then
+    host /run/current-system/sw/bin/systemd-run --user --pipe --wait "$TUNED_ADM" "$@"
+  else
+    return 127
+  fi
+}
+
 notify() {
   host "$NOTIFY_SEND" -a "game-performance" -i "$1" -t 4000 "$2" "$3" 2>/dev/null
 }
@@ -69,7 +91,7 @@ else
   noctalia=false
 fi
 
-if ! active_line="$(host "$TUNED_ADM" active 2>/dev/null)"; then
+if ! active_line="$(tuned active 2>/dev/null)"; then
   echo "game-performance: tuned-adm unavailable, launching unmodified" >&2
   exec "$@"
 fi
@@ -105,7 +127,7 @@ noctalia_nightlight_enabled() {
 nightlight_restore=false
 
 restore_profile() {
-  if host "$TUNED_ADM" profile "$prev_profile" 2>/dev/null; then
+  if tuned profile "$prev_profile" 2>/dev/null; then
     notify "power-profile-balanced-symbolic" "Power profile restored" "$prev_profile"
   fi
   if [[ "$noctalia" == true ]]; then
@@ -121,7 +143,7 @@ restore_profile() {
 trap restore_profile EXIT INT TERM
 
 if [[ "$prev_profile" != "$PERF_PROFILE" ]]; then
-  if host "$TUNED_ADM" profile "$PERF_PROFILE" 2>/dev/null; then
+  if tuned profile "$PERF_PROFILE" 2>/dev/null; then
     notify "power-profile-performance-symbolic" "Performance mode" "$PERF_PROFILE for this game"
   else
     echo "game-performance: couldn't switch to '$PERF_PROFILE' profile" >&2
