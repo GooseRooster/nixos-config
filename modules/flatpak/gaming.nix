@@ -11,10 +11,10 @@
     # Steam is native now (modules/gaming/steam.nix): Millennium does not
     # support the Flatpak Steam. AdwSteamGtk is gone too — Millennium owns
     # Steam theming.
-    # Wine, winetricks and Faugus Launcher are native too (modules/gaming/wine.nix).
+    # Wine, winetricks and Faugus Launcher are native too (modules/gaming/wine.nix);
+    # LACT is native with its system daemon (services.lact).
     "com.vysp3r.ProtonPlus"
     "dev.vencord.Vesktop"
-    "io.github.ilya_zlobintsev.LACT"
     "net.pcsx2.PCSX2"
     "org.DolphinEmu.dolphin-emu"
   ];

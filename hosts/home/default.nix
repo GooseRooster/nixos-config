@@ -136,6 +136,13 @@
           # Auto-start the Noctalia shell with the compositor.
           general.autostart = [ "noctalia" ];
 
+          # Focus follows the pointer; when focus lands on a partially hidden
+          # column, Umbriel scrolls the strip just enough to reveal it —
+          # effectively edge-scrolling the tiled viewport. Optional limiter:
+          # input.focus.follows_mouse_max_scroll (viewport widths; unset = no
+          # limit).
+          input.focus.follows_mouse = true;
+
           # This host's display: Dell AW3423DWF QD-OLED ultrawide. VRR while
           # fullscreen, HDR auto-activates on fullscreen surfaces with HDR metadata.
           output."DP-3" = {
@@ -251,6 +258,12 @@
 
   # Native Wine + winetricks + Faugus Launcher instead of their Flatpaks.
   modules.wine.enable = true;
+
+  # LACT (GPU monitoring/overclocking) native with its system daemon; the GUI
+  # manages /etc/lact/config.yaml itself (left unmanaged so the GUI can write).
+  # AMD GPU: overdrive unlocks the OC/underclock controls in LACT.
+  services.lact.enable = true;
+  hardware.amdgpu.overdrive.enable = true;
 
   # Stage weekly upgrades in the bootloader (no live switch); reboot to apply.
   modules.autoUpgrade.enable = true;
