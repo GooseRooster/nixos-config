@@ -34,5 +34,6 @@
     sbctl
     libnotify
     wl-clipboard
+    playerctl
   ];
 }

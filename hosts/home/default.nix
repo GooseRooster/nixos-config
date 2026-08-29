@@ -167,7 +167,7 @@
           # fullscreen, HDR auto-activates on fullscreen surfaces with HDR metadata.
           output."DP-3" = {
             mode = "3440x1440@164.9";
-            hdr = "auto";
+            hdr = "on";
             vrr = "fullscreen";
           };
 
