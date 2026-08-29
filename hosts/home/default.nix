@@ -43,11 +43,31 @@
     users.gooze =
       { osConfig, lib, ... }:
       {
-        imports = [
-          inputs.dotfiles.hmModules.desktop
-          inputs.noctalia.homeModules.default
-          inputs.umbriel.homeModules.default
-        ];
+      imports = [
+        inputs.dotfiles.hmModules.desktop
+        inputs.noctalia.homeModules.default
+        inputs.umbriel.homeModules.default
+        inputs.zen-browser.homeModules.twilight
+      ];
+
+      # Zen Browser, native (profiles land in ~/.zen so Noctalia's
+      # zen-browser template can theme them — the flatpak variant is
+      # invisible to that template's profile discovery). Default browser;
+      # Firefox stays installed as the backup. Launch as `zen-twilight`.
+      programs.zen-browser = {
+        enable = true;
+        setAsDefaultBrowser = true;
+
+        # Light de-bloat; keep Zen's own update checker disabled since the
+        # flake manages versions (twilight artifacts are pinned in flake.lock).
+        policies = {
+          DisableTelemetry = true;
+          DisableFirefoxStudies = true;
+          DisablePocket = true;
+          DontCheckDefaultBrowser = true;
+          DisableAppUpdate = true;
+        };
+      };
 
         # Mirror the NixOS session choice into the dotfiles flags so
         # session-gated HM content (tinty -> Noctalia hook) follows the
@@ -162,6 +182,8 @@
             # yazi file manager 
             "Mod+E" = "spawn:termapp yazi";
               
+            # settings
+            "Mod+Shift+I" ="spawn:noctalia msg settings-open"
 
             # Screenshots (Noctalia's built-in capture over wlr-screencopy).
             "Print" = "spawn:noctalia msg screenshot-region";
@@ -264,6 +286,11 @@
   # AMD GPU: overdrive unlocks the OC/underclock controls in LACT.
   services.lact.enable = true;
   hardware.amdgpu.overdrive.enable = true;
+
+  # Firefox Developer Edition alongside regular Firefox for web dev work.
+  # Dev Edition keeps its own dedicated profile directory, so the two
+  # browsers never touch each other's state.
+  environment.systemPackages = [ pkgs.firefox-devedition ];
 
   # Stage weekly upgrades in the bootloader (no live switch); reboot to apply.
   modules.autoUpgrade.enable = true;

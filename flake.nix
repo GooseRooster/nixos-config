@@ -60,6 +60,17 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
+    # Zen Browser (native, not the Flatpak: Noctalia's zen-browser template
+    # only discovers native ~/.zen profiles). Community flake, twilight
+    # variant for reproducible artifact pinning.
+    zen-browser = {
+      url = "github:0xc000022070/zen-browser-flake";
+      inputs = {
+        nixpkgs.follows = "nixpkgs";
+        home-manager.follows = "home-manager";
+      };
+    };
+
     # Secure Boot (UKI signing via sbctl). Safe to follow our nixpkgs.
     lanzaboote.url = "github:nix-community/lanzaboote/v1.1.0";
     lanzaboote.inputs.nixpkgs.follows = "nixpkgs";
