@@ -52,5 +52,12 @@
     "com.usebottles.bottles"
     "com.protonvpn.www"
     "com.rafaelmardojai.Blanket"
+    # GTK theme extensions: sandboxed GTK3 apps can't see host themes, so the
+    # adw-gtk3 theme must be installed into flatpak land for them (Boxes,
+    # seahorse, thunderbird, ...). Flatpak auto-mounts the matching branch per
+    # app runtime. Libadwaita (GTK4) flatpaks read the host
+    # ~/.config/gtk-4.0/gtk.css overlay instead and don't need these.
+    "org.gtk.Gtk3theme.adw-gtk3"
+    "org.gtk.Gtk3theme.adw-gtk3-dark"
   ];
 }

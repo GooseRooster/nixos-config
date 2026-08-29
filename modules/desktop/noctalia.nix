@@ -97,6 +97,16 @@ in
     # gtk-theme=adw-gtk3-dark via dconf when the theme is present). GTK4 /
     # libadwaita apps pick the colors up from ~/.config/gtk-4.0/gtk.css
     # without it.
-    environment.systemPackages = [ pkgs.adw-gtk3 ];
+    environment.systemPackages = [
+      pkgs.adw-gtk3
+
+      # GTK settings editor for wlroots-style sessions (Noctalia docs'
+      # recommended way to (re)apply adw-gtk3). One-time use: select
+      # "adw-gtk3", Apply — and keep the GTK4 option UNCHECKED (libadwaita
+      # apps are themed by Noctalia's gtk.css overlay, not a GTK4 theme).
+      # If GTK4 apps keep wrong colors, Preferences -> "Clear" removes stale
+      # custom GTK4 theme state (e.g. from the gnomad era), then re-apply.
+      pkgs.nwg-look
+    ];
   };
 }
