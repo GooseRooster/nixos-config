@@ -21,7 +21,7 @@
     programs.steam = {
       enable = true;
       package = pkgs.millennium-steam;
-      protontrickcs.enable = true;
+      protontricks.enable = true;
     };
   };
 }
