@@ -156,12 +156,7 @@
           # Auto-start the Noctalia shell with the compositor.
           general.autostart = [ "noctalia" ];
 
-          # Focus follows the pointer; when focus lands on a partially hidden
-          # column, Umbriel scrolls the strip just enough to reveal it —
-          # effectively edge-scrolling the tiled viewport. Optional limiter:
-          # input.focus.follows_mouse_max_scroll (viewport widths; unset = no
-          # limit).
-          input.focus.follows_mouse = true;
+          input.focus.follows_mouse = false;
 
           # This host's display: Dell AW3423DWF QD-OLED ultrawide. VRR while
           # fullscreen, HDR auto-activates on fullscreen surfaces with HDR metadata.

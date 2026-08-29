@@ -40,20 +40,30 @@ PERF_PROFILE="@perfProfile@"
 
 # Detect whether we're inside a Flatpak sandbox; fall back to running
 # commands directly if not (e.g. testing this script from a bare terminal).
+#
+# Steam prepends gameoverlayrenderer.so to LD_PRELOAD for launch-option
+# commands (native Steam; the Flatpak version does the same for its own
+# game processes). That .so depends on Steam Runtime libraries which don't
+# resolve for host-side Nix binaries — every spawned process dies at loader
+# stage with exit 127 ("libGL.so.1: cannot open shared object file"). Strip
+# Steam's injected LD_* vars for host calls; the game itself (invoked
+# directly at the bottom, not via host()) keeps them so the overlay works.
 if [[ -f /.flatpak-info ]] && command -v flatpak-spawn &>/dev/null; then
-  host() { flatpak-spawn --host "$@"; }
+  host() { env -u LD_PRELOAD -u LD_LIBRARY_PATH flatpak-spawn --host "$@"; }
 else
-  host() { "$@"; }
+  host() { env -u LD_PRELOAD -u LD_LIBRARY_PATH "$@"; }
 fi
 
 notify() {
   host "$NOTIFY_SEND" -a "game-performance" -i "$1" -t 4000 "$2" "$3" 2>/dev/null
 }
 
-# Noctalia v5 IPC availability: probe with a read-only status command. The
-# sandbox may not mount Noctalia's IPC socket, but the host-side invocation
-# always sees it (and steam needs the flatpak-spawn talk permission anyway).
-if host "$NOCTALIA" msg wifi-status &>/dev/null; then
+# Noctalia v5 IPC availability: probe with `msg status`, which exits 0
+# whenever the daemon is reachable (unlike e.g. wifi-status, which reflects
+# hardware state and can fail with Wi-Fi off). The sandbox may not mount
+# Noctalia's IPC socket, but the host-side invocation always sees it (and
+# steam needs the flatpak-spawn talk permission anyway).
+if host "$NOCTALIA" msg status &>/dev/null; then
   noctalia=true
 else
   noctalia=false
