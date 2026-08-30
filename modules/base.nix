@@ -1,8 +1,9 @@
 { lib, ... }:
 
 # Shared base every host imports: core system plumbing + the enable defaults
-# for the toggleable core modules. Host-specific extras (desktop stacks, cli
-# bundles, podman, flatpak sets, ...) are imported by hosts directly.
+# for the toggleable core modules. Host-specific extras (desktop stacks, podman,
+# flatpak sets, ...) are imported by hosts directly; CLI batteries come via the
+# home-manager repo's home.bundles.* options.
 {
   imports = [
     ./core/system.nix
@@ -11,6 +12,7 @@
     ./core/perf.nix
     ./core/nix.nix
     ./core/users.nix
+    ./core/ssh.nix
     ./core/hardening.nix
     ./core/maintenance.nix
     ./core/gnupg.nix

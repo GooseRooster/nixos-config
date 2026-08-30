@@ -6,9 +6,6 @@
     ../../modules/base.nix
     ../../modules/desktop/default.nix
     ../../modules/desktop/noctalia.nix
-    inputs.cli.nixosModules.dev
-    inputs.cli.nixosModules.base-extra
-    inputs.cli.nixosModules.ssh
     ../../modules/core/podman.nix
     ../../modules/flatpak/base.nix
     ../../modules/flatpak/gaming.nix
@@ -79,6 +76,7 @@
 
         # Feature flags for the dotfiles modules (formerly hosts/desktop.nix
         # in the dotfiles repo, which no longer carries per-host files).
+        home.bundles.baseExtra.enable = true; # desktop extras (fonts, vscode, …)
         home.modules.gaming.enable = true;
         home.modules.theming.enable = true;
         # Rootless podman socket + docker->podman alias (lazydocker/lazypodman).

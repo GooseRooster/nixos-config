@@ -9,9 +9,6 @@
     ../../modules/desktop/gnome-devtools.nix
     ../../modules/desktop/gnome-settings.nix
     ../../modules/desktop/gnome-extensions.nix
-    inputs.cli.nixosModules.dev
-    inputs.cli.nixosModules.base-extra
-    inputs.cli.nixosModules.ssh
     ../../modules/core/podman.nix
     ../../modules/flatpak/base.nix
     inputs.home-manager.nixosModules.home-manager
@@ -29,6 +26,8 @@
   # needs the rootless socket + DOCKER_HOST (dockerCompat only gives rootful).
   home-manager.users.gooze = {
     imports = [ inputs.dotfiles.hmModules.default ];
+    # Desktop extras (fonts, vscode, fastfetch, …). bundles.base is default-on.
+    home.bundles.baseExtra.enable = true;
     home.modules.podmanAlias.enable = true;
   };
   # Only until `passwd gooze` sets a real one; initialPassword applies only

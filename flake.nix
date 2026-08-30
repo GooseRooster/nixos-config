@@ -23,21 +23,19 @@
       flake = false;
     };
 
-    # CLI batteries live in their own repo. Safe to follow our nixpkgs.
-    cli.url = "github:GooseRooster/nix-cli";
-    cli.inputs.nixpkgs.follows = "nixpkgs";
+    # CLI batteries now live in the home-manager repo (home.bundles.* in
+    # home.packages) — no separate flake input.
 
     # GNOME colour-scheme TUI (theming). Safe to follow our nixpkgs.
     gnomad.url = "github:GooseRooster/gnomad";
     gnomad.inputs.nixpkgs.follows = "nixpkgs";
 
-    # Home Manager (the tool) + our dotfiles repo (the config).
+    # Home Manager (the tool) + our dotfiles repo (the config + CLI bundles).
     home-manager.url = "github:nix-community/home-manager";
     home-manager.inputs.nixpkgs.follows = "nixpkgs";
 
     dotfiles.url = "github:GooseRooster/home-manager";
     dotfiles.inputs.home-manager.follows = "home-manager";
-    dotfiles.inputs.nix-cli.follows = "cli";
     dotfiles.inputs.nixpkgs.follows = "nixpkgs";
 
     # Steam Millennium (theme/plugin framework for the Steam client). Its
