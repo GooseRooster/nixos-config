@@ -46,7 +46,33 @@
     backupFileExtension = "hm-backup";
 
     users.gooze =
-      { osConfig, lib, ... }:
+      { osConfig, lib, pkgs, ... }:
+      let
+        # Mini EQ autostart is a startup race: the Background portal
+        # (xdg-desktop-portal-gnome, see modules/desktop/noctalia.nix) drops
+        # ~/.config/autostart/io.github.bhack.mini-eq.desktop, Umbriel's systemd
+        # session turns that into a transient app-*@autostart.service unit
+        # (systemd-xdg-autostart-generator), and the unit starts with the
+        # session — i.e. before wireplumber has published the default sink.
+        # mini-eq's --auto-route then errors ("output sink cannot be a Mini EQ
+        # virtual sink") and exits. Drop-ins also apply to generator-produced
+        # units, so gate the (unchanged) ExecStart on a real default sink below.
+        miniEqSinkWait = pkgs.writeShellScript "mini-eq-wait-default-sink" ''
+          # Wait (max 60s) until pactl reports a default sink that is NOT Mini
+          # EQ's own virtual filter-chain (mini_eq_sink), then let ExecStart
+          # run. On timeout, start anyway and let mini-eq fail loudly. Match
+          # on mini+eq, not just "mini" — the RØDE NT-USB Mini is a real sink.
+          pactl="${lib.getExe' pkgs.pulseaudio "pactl"}"
+          for _ in $(seq 1 60); do
+            sink="$("$pactl" info 2>/dev/null | sed -n 's/^Default Sink: //p' || true)"
+            lower="''${sink,,}"
+            if [[ -n "$lower" && "$lower" != *mini*eq* && "$lower" != *eq*mini* ]]; then
+              exit 0
+            fi
+            sleep 1
+          done
+        '';
+      in
       {
       imports = [
         inputs.dotfiles.hmModules.default
@@ -109,9 +135,17 @@
           terminal = false;
           type = "Application";
           categories = [ "System" "FileManager" "FileTools" ];
-          mimeType = [ "inode/directory" ];
+          mimeType = [ "text/plain" ];
         };
       };
+
+      # systemd drop-in for the transient unit generated from mini-eq's
+      # ~/.config/autostart entry (rationale in miniEqSinkWait above). The
+      # directory name carries systemd's escaped form of the unit name.
+      xdg.configFile."systemd/user/app-io.github.bhack.mini\\x2deq@autostart.service.d/override.conf".text = ''
+        [Service]
+        ExecStartPre=${miniEqSinkWait}
+      '';
 
       # Noctalia v5 + Umbriel baseline settings (both are build-validated by
       # their packages). Only materialised when the noctalia session stack is
@@ -201,7 +235,7 @@
             # to its left / push it out into its own new column. True float
             # <-> tile stays on the packaged Mod+T (window-toggle-floating).
             "Mod+I" = "window-consume-left";
-            "Mod+O" = "window-expel-right";
+            "Mod+O" = "window-consume-or-expel-right";
             "Mod+Tab" = "overview-toggle";
 
             # Column width: toggle full width <-> previous width, and nudge
