@@ -3,7 +3,13 @@
 {
   imports = [
     ./hardware-configuration.nix
-    ../../flavors/desktop.nix
+    ../../modules/base.nix
+    ../../modules/desktop/default.nix
+    ../../modules/desktop/noctalia.nix
+    inputs.cli.nixosModules.dev
+    inputs.cli.nixosModules.base-extra
+    inputs.cli.nixosModules.ssh
+    ../../modules/core/podman.nix
     ../../modules/flatpak/base.nix
     ../../modules/flatpak/gaming.nix
     ../../modules/flatpak/multimedia.nix
@@ -31,20 +37,22 @@
   # uid and orphan the existing home + keyring.
   modules.users.uid = 1000;
 
-  # Home dotfiles (the GooseRooster/home-manager repo). hmModules.desktop
-  # bundles home.nix + hosts/desktop.nix, which sets the gaming/theming/
-  # podmanAlias flags and the session below is mirrored into it — the
-  # standalone (`home-manager switch`) and integrated tracks stay identical.
+  # Home dotfiles (the GooseRooster/home-manager repo). hmModules.default
+  # bundles home.nix (shared modules + XDG plumbing); this host sets the
+  # home.modules.* feature flags itself. home.modules.session is mirrored
+  # from the NixOS session option so HM-gated content (ghostty theme, gtk
+  # theme-name, tinty) follows modules.desktop.session — the single source
+  # of truth for the session choice.
   home-manager = {
-    # Back up (instead of erroring on) pre-existing files when the standalone
-    # and integrated HM generations trade ownership of overlapping paths.
+    # Back up (instead of erroring on) pre-existing files when a foreign
+    # standalone generation previously owned overlapping paths.
     backupFileExtension = "hm-backup";
 
     users.gooze =
       { osConfig, lib, ... }:
       {
       imports = [
-        inputs.dotfiles.hmModules.desktop
+        inputs.dotfiles.hmModules.default
         inputs.noctalia.homeModules.default
         inputs.umbriel.homeModules.default
         inputs.zen-browser.homeModules.twilight
@@ -68,6 +76,13 @@
           DisableAppUpdate = true;
         };
       };
+
+        # Feature flags for the dotfiles modules (formerly hosts/desktop.nix
+        # in the dotfiles repo, which no longer carries per-host files).
+        home.modules.gaming.enable = true;
+        home.modules.theming.enable = true;
+        # Rootless podman socket + docker->podman alias (lazydocker/lazypodman).
+        home.modules.podmanAlias.enable = true;
 
         # Mirror the NixOS session choice into the dotfiles flags so
         # session-gated HM content (tinty -> Noctalia hook) follows the
@@ -268,8 +283,8 @@
   modules.snapper.enable = true;
 
   # Lightweight DE: ly (DM) + Umbriel (compositor) + Noctalia v5 (shell).
-  # Flip back to "gnome" (the flavor default) to return to GDM + GNOME.
-  modules.desktop.session = "noctalia";
+  # modules.desktop.session is set by noctalia.nix (mkDefault); to return to
+  # GNOME, swap the noctalia.nix import for the gnome-* modules (see hosts/vm).
 
   # Native Steam (Millennium-flavoured) instead of the Flatpak Steam.
   modules.steam.enable = true;

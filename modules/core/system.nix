@@ -1,6 +1,6 @@
 { config, pkgs, lib, ... }:
 
-# Minimal core that every flavor shares.
+# Minimal core that every host shares (via modules/base.nix).
 {
   time.timeZone = "Africa/Johannesburg";
 

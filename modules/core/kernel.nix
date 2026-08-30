@@ -8,7 +8,7 @@ in
     variant = lib.mkOption {
       type = lib.types.enum [ "latest" "lts" ];
       default = "latest";
-      description = "Which nixpkgs kernel family to use. Select per-host/per-flavor.";
+      description = "Which nixpkgs kernel family to use. Select per-host.";
     };
   };
 

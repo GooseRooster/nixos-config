@@ -1,7 +1,15 @@
 { config, lib, pkgs, ... }:
 
 {
-  config = lib.mkIf (config.modules.desktop.session == "gnome") {
+  config = lib.mkMerge [
+    {
+      # Identify the stack this module provides (see session.nix). mkDefault
+      # so a host can still pin it explicitly; importing both stacks surfaces
+      # the conflict loudly at eval time.
+      modules.desktop.session = lib.mkDefault "gnome";
+    }
+
+    (lib.mkIf (config.modules.desktop.session == "gnome") {
     # GDM + GNOME (both Wayland-only since GNOME 50).
     services.displayManager.gdm.enable = true;
     services.desktopManager.gnome.enable = true;
@@ -35,5 +43,6 @@
       orca              # screen reader
       # gnome-bluetooth # uncomment on hosts WITHOUT bluetooth hardware
     ];
-  };
+    })
+  ];
 }

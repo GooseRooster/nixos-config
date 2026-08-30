@@ -10,12 +10,18 @@ let
   isNoctalia = config.modules.desktop.session == "noctalia";
 in
 {
+  # Identify the stack this module provides (see session.nix). mkDefault so a
+  # host can still pin it explicitly; importing both stacks surfaces the
+  # conflict loudly at eval time.
   imports = [
     inputs.noctalia.nixosModules.default
     inputs.umbriel.nixosModules.default
   ];
 
-  config = lib.mkIf isNoctalia {
+  config = lib.mkMerge [
+    { modules.desktop.session = lib.mkDefault "noctalia"; }
+
+    (lib.mkIf isNoctalia {
     # Umbriel (Wayland compositor). The flake's NixOS module installs the
     # package, the Umbriel session .desktop (what ly lists), the
     # xdg-desktop-portal-umbriel backend (screen sharing/capture portals) and
@@ -108,5 +114,6 @@ in
       # custom GTK4 theme state (e.g. from the gnomad era), then re-apply.
       pkgs.nwg-look
     ];
-  };
+    })
+  ];
 }

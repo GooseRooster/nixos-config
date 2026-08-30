@@ -3,7 +3,16 @@
 {
   imports = [
     ./hardware-configuration.nix
-    ../../flavors/desktop.nix
+    ../../modules/base.nix
+    ../../modules/desktop/default.nix
+    ../../modules/desktop/gnome.nix
+    ../../modules/desktop/gnome-devtools.nix
+    ../../modules/desktop/gnome-settings.nix
+    ../../modules/desktop/gnome-extensions.nix
+    inputs.cli.nixosModules.dev
+    inputs.cli.nixosModules.base-extra
+    inputs.cli.nixosModules.ssh
+    ../../modules/core/podman.nix
     ../../modules/flatpak/base.nix
     inputs.home-manager.nixosModules.home-manager
   ];
@@ -41,7 +50,7 @@
   hardware.bluetooth.enable = false;
 
   # Plain nixpkgs kernel for the VM. `latest` is the default, but set it here
-  # explicitly to document the per-flavor kernel selection path.
+  # explicitly to document the per-host kernel selection path.
   modules.kernel.variant = "latest";
 
   # GNOME in Boxes needs 3D acceleration (virtio-gpu / virgl) enabled in the

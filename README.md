@@ -15,25 +15,33 @@ and are pulled in as a flake input.
 
 ## Layout
 
-- `hosts/<name>/` — per-machine entrypoint (hostname, user, flatpaks, kernel, hardware)
-- `flavors/` — high-level combos: `base`, `desktop`, `wsl` (stub)
-- `modules/core/` — cross-flavor system modules (`system`, `kernel`, `perf`,
+- `hosts/<name>/` — per-machine entrypoint (hostname, user, session stack, flatpaks, kernel, hardware)
+- `modules/base.nix` — shared core every host imports (core modules + defaults)
+- `modules/core/` — cross-host system modules (`system`, `kernel`, `perf`,
   `nix`, `users`, `hardening`, `maintenance`, `podman`, `secure-boot`)
-- `modules/desktop/` — GNOME + audio/portal/keyring/power modules
+- `modules/desktop/` — shared desktop plumbing (`modules/desktop/default.nix`)
+  plus the session stack modules: `gnome*.nix` and `noctalia.nix`
 - `modules/flatpak/` — declarative flatpaks, split into toggle-able sets
 - `modules/extras/` — optional host extras (theming)
 - `quadlets/` — example podman quadlet files (system + rootless user templates)
 
-## Host vs flavor
+## Host composition
 
-A **host** selects a **flavor** and adds its own machine-specific extras:
+There is no flavor layer: each host imports what it needs, explicitly.
 
-- **flavor** = reusable system shape (`base` / `desktop` / `wsl`).
-- **host** = hostname + hardware + user + which extras are enabled (flatpak
-  sets, theming, kernel, etc).
+- `modules/base.nix` — core modules + perf/hardening/maintenance defaults,
+  imported by every host.
+- `modules/desktop/default.nix` — desktop plumbing shared by every session
+  stack (audio, portals, keyring, power, ...).
+- Session stack: a host imports exactly one of `modules/desktop/gnome.nix`
+  (+ `gnome-settings.nix`, `gnome-devtools.nix`, `gnome-extensions.nix`) or
+  `modules/desktop/noctalia.nix`. Each stack sets `modules.desktop.session`
+  via `mkDefault`, which gates its own config and mirrors into Home Manager.
 
-`hosts/vm` and `hosts/home` both use the `desktop` flavor; only `home` enables
-theming.
+So `hosts/home` imports base + desktop + `noctalia.nix`; `hosts/vm` imports
+base + desktop + the `gnome-*.nix` modules. Per-host extras (flatpak sets,
+gaming, theming, secure-boot, ...) are imported and enabled directly in the
+host file.
 
 ## Kernel selection
 
@@ -51,7 +59,8 @@ modules.kernel.variant = "lts";   # plain nixpkgs LTS kernel
 
 Users are declared per host via `modules/users.nix`. Set
 `modules.users.primary = "gooze"` (or a per-host name) and the module creates a
-normal user with the groups supplied by the flavor.
+normal user with the groups listed in `modules/users.nix` (extended by
+`modules/desktop/default.nix` on desktop hosts).
 
 Use the **same name** for the account you create in the graphical installer, so
 the flake reuses that account (same uid, same `/home`, same keyring) instead of
@@ -124,9 +133,9 @@ matches that layout.
 
 ### 1. Install with the graphical installer
 
-Boot the GNOME ISO and run the graphical installer:
+Boot the ISO and run the graphical installer:
 
-- Choose **GNOME** and, when prompted, **btrfs** as the filesystem (with LUKS
+- Choose **Any DE, does not matter** and, when prompted, **btrfs** as the filesystem (with LUKS
   encryption — recommended). Use *erase disk* (or manual partitioning); the
   installer creates `home` and `nix` subvolumes plus an encrypted swap
   partition.
@@ -162,7 +171,7 @@ boot.initrd.luks.devices."luks-cef99b37-a347-4432-be60-8d04312cf661".device =
 ```
 
 Confirm `system.stateVersion` in `hosts/<yourhost>/default.nix` matches the value in
-`/etc/nixos/configuration.nix` (it is already `"26.05"`).
+`/etc/nixos/configuration.nix`
 
 ### 4. Verify the btrfs layout matches the snapshot config
 
@@ -277,14 +286,6 @@ sudo sbctl list-enrolled-keys
 > one Lanzaboote signed with (i.e. your keys were never actually enrolled).
 
 
-## Power management
-
-- **Sleep / suspend-to-RAM** works out of the box via GNOME + systemd-logind —
-  no config needed.
-- **Hibernation** is *not* currently enabled: it needs `boot.resumeDevice`
-  (+ `resume_offset`). The graphical installer already created an encrypted
-  on-disk swap partition, so only the resume wiring is missing — `zramSwap`
-  remains the preferred (higher-priority) swap target.
 
 
 
@@ -337,12 +338,6 @@ sudo passwd gooze
 ## Roadmap
 
 
-### Planned
-
-- **Hibernation** — add an encrypted on-disk swap target and `boot.resumeDevice`
-  (see [Power management](#power-management)). The graphical-installer swap
-  partition is already on disk, so this only needs `boot.resumeDevice` +
-  `resume_offset` wiring.
 
 ### Done
 
@@ -358,6 +353,7 @@ sudo passwd gooze
 
 ## Adding a host (e.g. WSL)
 
-Create `hosts/<name>/default.nix`, point it at a flavor, set
+Create `hosts/<name>/default.nix` importing `modules/base.nix` plus the
+desktop/session stack modules it needs, set
 `modules.users.primary`, and add a matching `nixosConfigurations.<name>` in
 `flake.nix`.

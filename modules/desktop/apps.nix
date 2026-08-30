@@ -5,9 +5,8 @@
 
 {
   # Nautilus (Files) — the org.gnome.Nautilus flatpak is deprecated, so it
-  # comes from nixpkgs instead. Sushi (previewer) likewise. The standalone
-  # home-manager CLI enables fast dotfiles iteration
-  # (`home-manager switch --flake ~/.config/home-manager#desktop`).
+  # comes from nixpkgs instead. Sushi (previewer) likewise. The home-manager
+  # CLI is handy for inspecting/activating the integrated user generation.
   environment.systemPackages = [
     pkgs.nautilus
     pkgs.home-manager
