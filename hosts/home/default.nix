@@ -216,26 +216,6 @@
           # PaperWM-style muscle memory on Umbriel's scrolling layout, plus the
           # Noctalia IPC integration (docs.noctalia.dev). Overrides of the
           # packaged defaults win over the included base config.
-          # Window rules. Defining window_rule here replaces the packaged
-          # default config's [[window_rule]] array entirely (main-file values
-          # override every include, arrays included), so the packaged
-          # defaults are replicated below. Later rules win per field.
-          # Opacity rules are bypassed while a window is fullscreen and
-          # resume after it leaves fullscreen.
-          window_rule = [
-            # Packaged defaults: X-ray blur (optimized) for every window.
-            { blur = true; blur_optimized = true; }
-            # Packaged defaults: Noctalia settings + share picker floats.
-            { match.app_id = "^dev\\.noctalia\\.Noctalia$"; default_floating = true; default_size = [ 1020 900 ]; }
-            { match.app_id = "^dev\\.noctalia\\.UmbrielSharePicker$"; default_floating = true; default_size = [ 800 600 ]; }
-            # Packaged defaults: float browser Picture-in-Picture windows.
-            { match.title = "^(Picture-in-Picture|Picture in picture)$"; default_floating = true; default_maximize = false; default_position = { x = 20; y = 20; anchor = "bottom_right"; }; }
-            # Focused 90%, unfocused 80% (dynamic; follows focus changes).
-            { match.is_focused = true; opacity = 0.9; }
-            { match.is_focused = false; opacity = 0.8; }
-            # Browsers stay fully opaque.
-            { match.app_id = "^(zen-twilight|zen|app\\.zen-browser\\.zen|firefox|firefox-devedition|firefox-nightly|org\\.mozilla\\.(firefox|Nightly))$"; opacity = 1.0; }
-          ];
 
           keybinds = {
             # Terminal + window management.
