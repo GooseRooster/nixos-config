@@ -1,17 +1,16 @@
 # nixos-config
 
-Flake-based NixOS configuration for a Flatpak-first, bluefin-like GNOME desktop:
+Flake-based NixOS configuration for a Flatpak-first, bluefin-like GNOME/Noctalia desktop:
 
-- **Desktop**: minimal [GNOME](https://www.gnome.org) (GDM, Wayland-only)
-- **Apps**: declarative Flatpaks (see `modules/flatpak/`), GNOME core apps disabled; Firefox is native (`programs.firefox`, not a Flatpak)
-- **Shell extensions**: declaratively installed via `pkgs.gnomeExtensions`
+- **Desktop**: minimal [GNOME](https://www.gnome.org) (GDM, Wayland-only) or [Noctalia + Umbriel](https://noctalia.dev/) with Ly. 
+- **Apps**: declarative Flatpaks (see `modules/flatpak/`), GNOME core apps disabled; Some apps (Browsers, steam) are native due to various reasons (browser sandboxes behave better native, gaming packages sometimes perform better native. Steam needs native for Millenium if theming is enabled)
+- **Shell extensions**: (GNOME) declaratively installed via `pkgs.gnomeExtensions`
 - **Kernel**: nixpkgs kernel by default (`linuxPackages_latest`),
   with a per-host `latest` | `lts` fallback
 - **Hardening**: moderate kernel/sudo/ssh hardening (`modules/core/hardening.nix`)
 - **Maintenance**: automatic GC + store optimisation + fwupd
 
-CLI/dev batteries live in a separate repo ([`nix-cli`](https://github.com/GooseRooster/nix-cli))
-and are pulled in as a flake input.
+CLI/dev applications are considered a per user concern (unless necessary for the baseline system) and are thus pulled in as Flake inputs through Home Manager. 
 
 ## Layout
 
@@ -27,7 +26,6 @@ and are pulled in as a flake input.
 
 ## Host composition
 
-There is no flavor layer: each host imports what it needs, explicitly.
 
 - `modules/base.nix` — core modules + perf/hardening/maintenance defaults,
   imported by every host.
@@ -77,12 +75,6 @@ default) the installer-set password is left untouched and keeps working after
 the rebuild.
 
 
-For the VM, where you need to log in before you can `passwd`, set a throwaway
-password that only applies while the account has none:
-
-```nix
-modules.users.initialPassword = "changeme";
-```
 
 ## Flatpaks
 
@@ -92,20 +84,17 @@ it needs:
 ```nix
 modules.flatpak.enable = true;
 modules.flatpak.base.enable = true;        # essential desktop apps
-modules.flatpak.gaming.enable = true;      # Steam, emulators, ...
-modules.flatpak.multimedia.enable = true;  # Stremio, mpv
+modules.flatpak.gaming.enable = true;      # Proton management, emulators, ...
+modules.flatpak.multimedia.enable = true;  # Stremio, etc
 ```
 
 The sets live in `modules/flatpak/{base,gaming,multimedia}.nix`. To skip gaming
 on a workstation host, just don't import `gaming.nix` (or set
 `modules.flatpak.gaming.enable = false`).
 
-Declarative installs are handled by [nix-flatpak](https://github.com/gmodena/nix-flatpak)
-(nixpkgs removed its own `services.flatpak.packages` option). Application IDs
+Declarative installs are handled by [nix-flatpak](https://github.com/gmodena/nix-flatpak). Application IDs
 are installed from Flathub by default.
 
-Firefox is the exception: it is installed natively via `programs.firefox.enable`
-in `modules/desktop/gnome.nix`, not as a Flatpak. (Sandboxing reasons)
 
 ## GNOME Shell extensions
 
@@ -125,7 +114,7 @@ sudo nixos-rebuild boot --flake .#home
 
 ## Installing on the host (graphical installer)
 
-The disk is set up by the **graphical** NixOS installer (GNOME ISO): a single
+The disk is set up by the **graphical** NixOS installer: a single
 NVMe with an ESP at `/boot`, a LUKS-encrypted btrfs root with `home` and `nix`
 subvolumes, and a separate encrypted swap partition. The flake's
 `modules/core/snapper.nix` snapshots `/` and `/home` (skipping `/nix`), which
@@ -193,29 +182,14 @@ After this, log in as the declarative user (e.g. `gooze`) with the password you
 set during the install — the flake reused the same account, so nothing needs
 migrating.
 
-### 6. Run the one-time bootstrap
 
-Home Manager activation runs **once at boot** as a system service
-(`home-manager-<user>.service`), not on login. Network-dependent state (LazyVim
-clone, `tinty sync`, television channels) is *not* done there — it's done by a
-single idempotent `bootstrap` command instead, since activation runs before
-networking is up. Once you're logged in and online, run it once:
-
-```sh
-bootstrap
-```
-
-It's safe to re-run (each step skips itself once done; a failed offline step
-retries cleanly next time). See the home-manager README's **Bootstrap** section
-for details.
 
 
 
 ## Secure Boot (Lanzaboote)
 
 The plumbing lives in `modules/core/secure-boot.nix`, behind
-`modules.secureBoot.enable` (default `false`). It is intentionally disabled
-during install — `lzbt` can't sign UKIs until `sbctl` keys exist.
+`modules.secureBoot.enable` (default `false`).
 
 After the first successful boot:
 
@@ -267,7 +241,6 @@ Boot toggle misleadingly. The settings that matter:
   sudo sbctl enroll-keys --microsoft --ignore-immutable
   ```
 
-  (`chattr` is not needed; `--ignore-immutable` un-sets the flag itself.)
 - After enrolling, leave OS Type = "Windows UEFI Mode" and Secure Boot Mode =
   "Custom". Switching Secure Boot Mode back to "Standard" silently restores the
   factory keys and undoes your enrollment.
@@ -315,7 +288,6 @@ nix flake update
 
 # Update a single input
 nix flake update nixpkgs
-nix flake update cli
 
 # Sanity-check the flake before committing
 nix flake check
@@ -335,20 +307,9 @@ fwupdmgr get-updates
 sudo passwd gooze
 ```
 
-## Roadmap
 
 
 
-### Done
-
-- **CI** (`.github/workflows/`):
-  - `check` — `nix flake check` (builds both hosts) on push & PR.
-  - `update-flake-lock` — Sundays 09:17 UTC: updates all inputs and opens a PR
-    gated on building both hosts. Runs last in the update chain (after
-    `nix-cli` and `home-manager`), so the merged PRs from those repos are what
-    `cli`/`dotfiles` get pinned to. Lands before the Monday 00:00 local
-    `system.autoUpgrade`. Merging the weekly PRs also keeps the schedules
-    alive — GitHub disables cron workflows after 60 days of repo inactivity.
 
 
 ## Adding a host (e.g. WSL)
@@ -356,4 +317,5 @@ sudo passwd gooze
 Create `hosts/<name>/default.nix` importing `modules/base.nix` plus the
 desktop/session stack modules it needs, set
 `modules.users.primary`, and add a matching `nixosConfigurations.<name>` in
+
 `flake.nix`.
