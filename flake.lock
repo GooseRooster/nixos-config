@@ -57,11 +57,11 @@
         "television": "television"
       },
       "locked": {
-        "lastModified": 1788193501,
-        "narHash": "sha256-R4AS1zw2cOu0nWxhgY/0noG/q2Dw5zT98FfYAwCZejo=",
+        "lastModified": 1788194104,
+        "narHash": "sha256-s6jaWNm40FHxryj42Ew5TlR7JOaMKUmDqucAokMvPrg=",
         "owner": "GooseRooster",
         "repo": "home-manager",
-        "rev": "708ac10b32a1b63b4e1533f3fbda3ffd476b7180",
+        "rev": "c363dcecb464bf5af55a103e16cd54b7813bcf23",
         "type": "github"
       },
       "original": {
