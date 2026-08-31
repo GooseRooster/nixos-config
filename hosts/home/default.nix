@@ -216,6 +216,17 @@
           # PaperWM-style muscle memory on Umbriel's scrolling layout, plus the
           # Noctalia IPC integration (docs.noctalia.dev). Overrides of the
           # packaged defaults win over the included base config.
+          # Window rules. Blur-for-every-window and X-ray (optimized) blur come
+          # from the packaged default config; opacity rules are bypassed while
+          # a window is fullscreen and resume after it leaves fullscreen.
+          window_rule = [
+            # Focused 90%, unfocused 80% (dynamic; follows focus changes).
+            { match.is_focused = true; opacity = 0.9; }
+            { match.is_focused = false; opacity = 0.8; }
+            # Browsers stay fully opaque (later rules take precedence).
+            { match.app_id = "^(zen-twilight|zen|app\\.zen-browser\\.zen|firefox|firefox-devedition|firefox-nightly|org\\.mozilla\\.(firefox|Nightly))$"; opacity = 1.0; }
+          ];
+
           keybinds = {
             # Terminal + window management.
             "Mod+Return" = "spawn:termapp";
