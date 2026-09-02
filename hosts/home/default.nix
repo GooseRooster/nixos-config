@@ -108,6 +108,11 @@
         # Rootless podman socket + docker->podman alias (lazydocker/lazypodman).
         home.modules.podmanAlias.enable = true;
 
+        # zsh as the default interactive shell. Drives the dotfiles' ghostty
+        # `command` and (via modules/desktop/terminal.nix reading this same
+        # flag back) the termapp wrapper.
+        home.modules.defaultShell = "zsh";
+
         # Mirror the NixOS session choice into the dotfiles flags so
         # session-gated HM content (tinty -> Noctalia hook) follows the
         # modules.desktop.session option.

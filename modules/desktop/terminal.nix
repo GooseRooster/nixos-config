@@ -1,20 +1,34 @@
 { config, lib, pkgs, ... }:
 
 let
-  # Launch a terminal app in Ghostty with the nushell environment bootstrapped.
-  # Ghostty's `-e` sets initial-command, which replaces the `command = nu` shell,
-  # so a bare `ghostty -e nvim` skips nushell entirely. Wrapping the command in
-  # `nu --login -c` restores the full startup (env.nu sets $EDITOR/$NVIM_PROFILE/
-  # $SSH_AUTH_SOCK, config.nu defines aliases/functions like `y` and sources the
-  # carapace/zoxide/starship integrations). Plain `nu -c` only loads the built-in
-  # default env — not the user's env.nu or config.nu — so `--login` is required.
+  # The dotfiles' default-shell flag (home-manager repo, modules/flavors.nix).
+  # Set as a plain per-host value there, so reading it back here can't create
+  # an eval cycle; `or "nu"` covers hosts that don't wire home-manager at all.
+  hmShell =
+    (config.home-manager.users.${config.modules.users.primary}.home.modules.defaultShell or "nu");
+
+  # Launch a terminal app in Ghostty with the default shell's environment
+  # bootstrapped. Ghostty's `-e` sets initial-command, which replaces the
+  # `command = <shell>` setting, so a bare `ghostty -e nvim` skips shell init
+  # entirely. Wrapping the command in the shell restores the full startup:
+  # - nu --login -c: sources env.nu + config.nu ($EDITOR/$NVIM_PROFILE/
+  #   $SSH_AUTH_SOCK, config.nu aliases/functions like `y`, the
+  #   carapace/zoxide/starship integrations). Plain `nu -c` only loads the
+  #   built-in default env — not the user's env.nu or config.nu — so
+  #   `--login` is required.
+  # - zsh -l -c: login env only. .zshrc is interactive-only, so shell
+  #   aliases/functions aren't loaded — fine for binary targets (nvim, yazi).
   termapp = pkgs.writeScriptBin "termapp" ''
     #!/usr/bin/env bash
     set -euo pipefail
     if [ "$#" -eq 0 ]; then
       exec ${pkgs.ghostty}/bin/ghostty
     fi
-    exec ${pkgs.ghostty}/bin/ghostty -e ${pkgs.nushell}/bin/nu --login -c "$*"
+    exec ${pkgs.ghostty}/bin/ghostty -e ${
+      if hmShell == "zsh"
+      then "${pkgs.zsh}/bin/zsh -l -c"
+      else "${pkgs.nushell}/bin/nu --login -c"
+    } "$*"
   '';
 in
 {

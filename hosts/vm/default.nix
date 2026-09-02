@@ -29,6 +29,9 @@
     # Desktop extras (fonts, vscode, fastfetch, …). bundles.base is default-on.
     home.bundles.baseExtra.enable = true;
     home.modules.podmanAlias.enable = true;
+    # zsh as the default interactive shell (drives ghostty's `command` +
+    # termapp; see hosts/home/default.nix and the dotfiles' flavors.nix).
+    home.modules.defaultShell = "zsh";
   };
   # Only until `passwd gooze` sets a real one; initialPassword applies only
   # while the account has no password set.
