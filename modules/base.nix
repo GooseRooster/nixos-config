@@ -1,4 +1,4 @@
-{ lib, ... }:
+{ lib, pkgs, ... }:
 
 # Shared base every host imports: core system plumbing + the enable defaults
 # for the toggleable core modules. Host-specific extras (desktop stacks, podman,
@@ -23,6 +23,16 @@
   modules.perf.enable = true;
   modules.hardening.enable = true;
   modules.maintenance.enable = true;
+
+  # Escape hatch for prebuilt dynamically-linked (glibc) binaries — NixOS
+  # otherwise ships a stub /lib64/ld-linux-x86-64.so.2 and they die with
+  # "libstdc++.so.6 => not found". Needed for certain stacks' LSPs (Rust, Dotnet)
+  # # NOTE: any future prebuilt binary may need extra libs appended here.
+  programs.nix-ld.enable = true;
+  programs.nix-ld.libraries = with pkgs; [
+    stdenv.cc.cc.lib
+    zlib
+  ];
 
   # Base groups every host gets; hosts override with their own list.
   modules.users.extraGroups = lib.mkDefault [ "wheel" "networkmanager" ];
