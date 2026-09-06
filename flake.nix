@@ -8,7 +8,7 @@
     nix-flatpak.url = "github:gmodena/nix-flatpak/?ref=latest";
 
     # GNOME Shell extensions built from source (not in nixpkgs/EGO). Pinned as
-    # flake inputs (flake = false) so `nix flake update` / CI keeps them current
+    # flake inputs (flake = false) so `nix flake update` keeps them current
     # with no manual rev/hash management.
     gradia-capture = {
       url = "github:AlexanderVanhee/gradia-capture";
