@@ -27,7 +27,8 @@ in
     ];
 
     system.autoUpgrade = {
-      enable = true;
+      # Disabled for now 
+      enable = false;
 
       # `boot` stages the new system in the bootloader WITHOUT switching —
       # the running session is never touched. You reboot at your convenience
