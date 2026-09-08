@@ -5,7 +5,10 @@
     ./hardware-configuration.nix
     ../../modules/base.nix
     ../../modules/desktop/default.nix
-    ../../modules/desktop/noctalia.nix
+    ../../modules/desktop/gnome.nix
+    ../../modules/desktop/gnome-devtools.nix
+    ../../modules/desktop/gnome-settings.nix
+    ../../modules/desktop/gnome-extensions.nix
     ../../modules/core/podman.nix
     ../../modules/flatpak/base.nix
     ../../modules/flatpak/gaming.nix
@@ -36,22 +39,19 @@
 
   # Home dotfiles (the GooseRooster/home-manager repo). hmModules.default
   # bundles home.nix (shared modules + XDG plumbing); this host sets the
-  # home.modules.* feature flags itself. home.modules.session is mirrored
-  # from the NixOS session option so HM-gated content (ghostty theme, gtk
-  # theme-name, tinty) follows modules.desktop.session — the single source
-  # of truth for the session choice.
+  # home.modules.* feature flags itself.
   home-manager = {
     # Back up (instead of erroring on) pre-existing files when a foreign
     # standalone generation previously owned overlapping paths.
     backupFileExtension = "hm-backup";
 
     users.gooze =
-      { osConfig, lib, pkgs, ... }:
+      { lib, pkgs, ... }:
       let
         # Mini EQ autostart is a startup race: the Background portal
-        # (xdg-desktop-portal-gnome, see modules/desktop/noctalia.nix) drops
-        # ~/.config/autostart/io.github.bhack.mini-eq.desktop, Umbriel's systemd
-        # session turns that into a transient app-*@autostart.service unit
+        # (xdg-desktop-portal-gnome) drops
+        # ~/.config/autostart/io.github.bhack.mini-eq.desktop, GNOME's systemd
+        # user session turns that into a transient app-*@autostart.service unit
         # (systemd-xdg-autostart-generator), and the unit starts with the
         # session — i.e. before wireplumber has published the default sink.
         # mini-eq's --auto-route then errors ("output sink cannot be a Mini EQ
@@ -76,15 +76,12 @@
       {
       imports = [
         inputs.dotfiles.hmModules.default
-        inputs.noctalia.homeModules.default
-        inputs.umbriel.homeModules.default
         inputs.zen-browser.homeModules.twilight
       ];
 
-      # Zen Browser, native (profiles land in ~/.zen so Noctalia's
-      # zen-browser template can theme them — the flatpak variant is
-      # invisible to that template's profile discovery). Default browser;
-      # Firefox stays installed as the backup. Launch as `zen-twilight`.
+      # Zen Browser, native (browser sandboxes behave better native than
+      # flatpak). Default browser; Firefox stays installed as the backup.
+      # Launch as `zen-twilight`.
       programs.zen-browser = {
         enable = true;
         setAsDefaultBrowser = true;
@@ -112,11 +109,6 @@
         # `command` and (via modules/desktop/terminal.nix reading this same
         # flag back) the termapp wrapper.
         home.modules.defaultShell = "zsh";
-
-        # Mirror the NixOS session choice into the dotfiles flags so
-        # session-gated HM content (tinty -> Noctalia hook) follows the
-        # modules.desktop.session option.
-        home.modules.session = osConfig.modules.desktop.session;
 
       # nvim/yazi ship `Terminal=true` desktop entries (Exec=nvim/yazi). Override
       # them here (these land in ~/.local/share/applications, above the system
@@ -151,152 +143,6 @@
         [Service]
         ExecStartPre=${miniEqSinkWait}
       '';
-
-      # Noctalia v5 + Umbriel baseline settings (both are build-validated by
-      # their packages). Only materialised when the noctalia session stack is
-      # active — with GNOME selected these stay absent so the config files
-      # aren't generated for shells that aren't running.
-      programs.noctalia = lib.mkIf (osConfig.modules.desktop.session == "noctalia") {
-        # The shell itself is autostarted by Umbriel ([general].autostart
-        # below); enable here just installs the config file.
-        enable = true;
-        settings = {
-          shell = {
-            # Noctalia's native polkit agent (security.polkit is enabled by
-            # the noctalia NixOS module).
-            polkit_agent = true;
-
-            # Screenshot output policy for screenshot-region/-fullscreen IPC
-            # (bound to Umbriel keybinds below).
-            screenshot = {
-              directory = "~/Pictures/Screenshots";
-              save_to_file = true;
-              copy_to_clipboard = true;
-            };
-          };
-
-          # Lockscreen/notification daemons are built into Noctalia.
-          lockscreen.enabled = true;
-
-          # App theming via Noctalia's builtin templates: the rendered
-          # palettes land in writable files (~/.config/ghostty/themes/noctalia,
-          # ~/.config/umbriel/noctalia.toml). The template post-hooks would
-          # also edit ghostty's config / umbriel's config.toml, which are
-          # read-only HM symlinks — pre-seeded below / in the dotfiles ghostty
-          # config so those edits become no-ops.
-          theme.templates = {
-            enable_builtin_templates = true;
-            builtin_ids = [ "ghostty" "umbriel" ];
-          };
-        };
-      };
-
-      programs.umbriel = lib.mkIf (osConfig.modules.desktop.session == "noctalia") {
-        enable = true;
-        settings = {
-          # Layer our overrides on top of Umbriel's packaged default config
-          # (main-file values win over every include). noctalia.toml is the
-          # palette file Noctalia's builtin umbriel template re-renders on
-          # every palette change; listed last so it overrides the packaged
-          # defaults (its template post-hook would otherwise add this entry
-          # itself by rewriting config.toml — impossible on the HM symlink).
-          include.files = [
-            "${osConfig.programs.umbriel.package}/share/umbriel/config.toml"
-            "noctalia.toml"
-          ];
-
-          # Auto-start the Noctalia shell with the compositor.
-          general.autostart = [ "noctalia" ];
-
-          input.focus.follows_mouse = false;
-
-          # This host's display: Dell AW3423DWF QD-OLED ultrawide. VRR while
-          # fullscreen, HDR auto-activates on fullscreen surfaces with HDR metadata.
-          output."DP-3" = {
-            mode = "3440x1440@164.9";
-            hdr = "on";
-            vrr = "fullscreen";
-          };
-
-          # PaperWM-style muscle memory on Umbriel's scrolling layout, plus the
-          # Noctalia IPC integration (docs.noctalia.dev). Overrides of the
-          # packaged defaults win over the included base config.
-
-          keybinds = {
-            # Terminal + window management.
-            "Mod+Return" = "spawn:termapp";
-            "Mod+Q" = "window-close";
-
-            # yazi file manager 
-            "Mod+E" = "spawn:termapp yazi";
-              
-            # settings
-            "Mod+Shift+I" ="spawn:noctalia msg settings-open";
-
-            # Screenshots (Noctalia's built-in capture over wlr-screencopy).
-            "Print" = "spawn:noctalia msg screenshot-region";
-            "Mod+Print" = "spawn:noctalia msg screenshot-fullscreen";
-
-            # PaperWM immerse/expel: merge the focused window into the column
-            # to its left / push it out into its own new column. True float
-            # <-> tile stays on the packaged Mod+T (window-toggle-floating).
-            "Mod+I" = "window-consume-left";
-            "Mod+O" = "window-consume-or-expel-right";
-            "Mod+Tab" = "overview-toggle";
-
-            # Column width: toggle full width <-> previous width, and nudge
-            # the width in 5% steps (clamped 0.1-1.0). Mod+Equal covers the
-            # unshifted + key; Mod+Plus the shifted one.
-            "Mod+F" = "window-toggle-maximize";
-            "Mod+Equal" = "window-modify-width:0.05";
-            "Mod+Plus" = "window-modify-width:0.05";
-            "Mod+Minus" = "window-modify-width:-0.05";
-
-            # Focus (vim directions).
-            "Mod+H" = "window-focus-left";
-            "Mod+J" = "window-focus-down";
-            "Mod+K" = "window-focus-up";
-            "Mod+L" = "window-focus-right";
-
-            # Move window/column within the layout.
-            "Mod+Ctrl+H" = "column-move-left";
-            "Mod+Ctrl+J" = "window-move-down";
-            "Mod+Ctrl+K" = "window-move-up";
-            "Mod+Ctrl+L" = "column-move-right";
-
-            # Move window across workspaces (linear per output: prev/next;
-            # J/K move within the column or across the workspace boundary).
-            "Mod+Shift+H" = "window-move-to-workspace-previous";
-            "Mod+Shift+J" = "window-move-or-workspace-down";
-            "Mod+Shift+K" = "window-move-or-workspace-up";
-            "Mod+Shift+L" = "window-move-to-workspace-next";
-
-            # Switch workspaces.
-            "Mod+Alt+K" = "workspace-previous";
-            "Mod+Alt+J" = "workspace-next";
-
-            # Noctalia panels; lock moved here (Mod+Shift+L is taken above).
-            "Mod+V" = "spawn:noctalia msg panel-toggle clipboard";
-            "Mod+W" = "spawn:noctalia msg panel-toggle wallpaper";
-            "Mod+X" = "spawn:noctalia msg bar-toggle";
-            "Mod+Escape" = "spawn:noctalia msg panel-toggle session";
-            "Ctrl+Alt+L" = "spawn:noctalia msg session lock";
-
-            "XF86AudioRaiseVolume" = "spawn:noctalia msg volume-up";
-            "XF86AudioLowerVolume" = "spawn:noctalia msg volume-down";
-            "Mod+Down" = "spawn:playerctl play-pause";
-            "Mod+XF86AudioMute" = "spawn:wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle";
-            "XF86MonBrightnessUp" = {
-              action = "spawn:noctalia msg brightness-up 10";
-              allow_when_locked = true;
-            };
-            "XF86MonBrightnessDown" = {
-              action = "spawn:noctalia msg brightness-down 10";
-              allow_when_locked = true;
-            };
-          };
-        };
-      };
     };
   };
 
@@ -320,9 +166,8 @@
   # btrfs snapshots of / and /home (rollback for data, unlike Nix generations).
   modules.snapper.enable = true;
 
-  # Lightweight DE: ly (DM) + Umbriel (compositor) + Noctalia v5 (shell).
-  # modules.desktop.session is set by noctalia.nix (mkDefault); to return to
-  # GNOME, swap the noctalia.nix import for the gnome-* modules (see hosts/vm).
+  # GNOME (GDM + GNOME Shell) with tinty + gnomad owning theming
+  # (modules/extras/theming.nix).
 
   # Native Steam (Millennium-flavoured) instead of the Flatpak Steam.
   modules.steam.enable = true;

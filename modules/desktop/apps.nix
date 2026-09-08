@@ -1,7 +1,7 @@
 { lib, pkgs, ... }:
 
-# Apps + fonts shared by every session stack (GNOME and noctalia alike).
-# GNOME-specific tooling (refine, dconf-editor, ...) stays in the gnome module.
+# Apps + fonts shared by every host.
+# GNOME-specific tooling (refine, dconf-editor, ...) stays in the gnome modules.
 
 {
   # Nautilus (Files) — the org.gnome.Nautilus flatpak is deprecated, so it
