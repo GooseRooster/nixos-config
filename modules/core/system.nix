@@ -35,5 +35,6 @@
     libnotify
     wl-clipboard
     playerctl
+    statix
   ];
 }
