@@ -19,8 +19,11 @@ let
     lock-guard             # lock-guard@fthx
     wallpaper-slideshow    # azwallpaper@azwallpaper.gitlab.com
     mouse-follows-focus-2  # mouse-follows-focus@crisidev.org
-    hot-edge               # hotedge@jonathan.jdoda.ca
     grand-theft-focus      # grand-theft-focus@zalckos.github.com
+    esp-extensions-search-provider # extensions-search-provider@G-dH.github.com
+    vertical-workspaces    # vertical-workspaces@G-dH.github.com (V-Shell)
+    wsp-windows-search-provider # windows-search-provider@G-dH.github.com
+    wtmb-window-thumbnails # window-thumbnails@G-dH.github.com
     blur-my-shell          # blur-my-shell@aunetx
     caffeine               # caffeine@patapon.info
     gsconnect              # gsconnect@andyholmes.github.io

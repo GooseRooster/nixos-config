@@ -128,6 +128,22 @@
         "type": "github"
       }
     },
+    "hatter": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1789211813,
+        "narHash": "sha256-axFx8DEdzY3XVCQcOWmr5tocNUhIAJqcARgxBWwg0aY=",
+        "owner": "Mibea",
+        "repo": "Hatter",
+        "rev": "2d7c78276adf11613611733563b008fe021e3ecf",
+        "type": "github"
+      },
+      "original": {
+        "owner": "Mibea",
+        "repo": "Hatter",
+        "type": "github"
+      }
+    },
     "home-manager": {
       "inputs": {
         "nixpkgs": [
@@ -304,6 +320,7 @@
         "dotfiles": "dotfiles",
         "gnomad": "gnomad",
         "gradia-capture": "gradia-capture",
+        "hatter": "hatter",
         "home-manager": "home-manager",
         "lanzaboote": "lanzaboote",
         "millennium": "millennium",

@@ -1,4 +1,10 @@
-{ config, lib, ... }:
+{ config, lib, pkgs, inputs, ... }:
+
+let
+  # Not in nixpkgs, so built from source. Pinned as a flake input
+  # (flake = false), see pkgs/hatter.
+  hatter = pkgs.callPackage ../../pkgs/hatter { src = inputs.hatter; };
+in
 
 # Declarative GNOME dconf defaults (system-db sits below user-db, so these are
 # soft defaults the user can still override in Settings).
@@ -12,6 +18,9 @@
           # JetBrains Mono only as the monospace/terminal default — Nerd Fonts
           # are awkward to get Flatpaks to respect as a UI font.
           monospace-font-name = "JetBrainsMono Nerd Font Mono 11";
+
+          font-name = "JetBrainsMono Nerd Font Mono Bold 12";
+          icon-theme = "Hatter-Slate";
         };
 
         # Legacy default-terminal key — still used by the gsd media-key /
@@ -24,4 +33,17 @@
       };
     }
   ];
+
+  # Same defaults for the GDM greeter via its own dconf profile.
+  programs.dconf.profiles.gdm.databases = [
+    {
+      settings = {
+        "org/gnome/desktop/interface" = {
+          font-name = "JetBrainsMono Nerd Font Mono Bold 12";
+        };
+      };
+    }
+  ];
+
+  environment.systemPackages = [ hatter ];
 }

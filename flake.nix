@@ -23,6 +23,13 @@
       flake = false;
     };
 
+    # Hatter icon theme (not in nixpkgs). Pinned the same way as the
+    # extensions above; packaged in pkgs/hatter.
+    hatter = {
+      url = "github:Mibea/Hatter";
+      flake = false;
+    };
+
     # CLI batteries now live in the home-manager repo (home.bundles.* in
     # home.packages) — no separate flake input.
 
