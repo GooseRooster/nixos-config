@@ -8,11 +8,12 @@ in
     lib.mkEnableOption "automatic nix GC, store optimisation and firmware updates";
 
   config = lib.mkIf cfg.enable {
-    # Garbage-collect old generations weekly, keep 30 days for rollback safety.
+    # Garbage-collect old generations weekly; 14 days of rollback window,
+    # further capped by the bootloader generation limit.
     nix.gc = {
       automatic = true;
       dates = "weekly";
-      options = "--delete-older-than 30d";
+      options = "--delete-older-than 14d";
     };
 
     # Deduplicate/hardlink identical store paths.

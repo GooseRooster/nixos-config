@@ -20,6 +20,10 @@
   boot.loader.systemd-boot.enable = true;
   boot.loader.efi.canTouchEfiVariables = true;
 
+  # Cap boot entries (also honoured by lanzaboote for UKI pruning). Five
+  # generations is plenty of rollback headroom alongside the 14-day GC window.
+  boot.loader.systemd-boot.configurationLimit = 5;
+
   networking.networkmanager.enable = true;
 
   services.printing.enable = true;

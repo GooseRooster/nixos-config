@@ -40,6 +40,11 @@ in
           TIMELINE_LIMIT_WEEKLY = "2";
           TIMELINE_LIMIT_MONTHLY = "1";
           TIMELINE_LIMIT_YEARLY = "0";
+          # snapshotRootOnBoot creates "number"-type snapshots (default cap
+          # 50 kept them piling up); keep a tighter bound.
+          NUMBER_CLEANUP = "yes";
+          NUMBER_LIMIT = "10";
+          NUMBER_LIMIT_IMPORTANT = "3";
         };
         home = {
           SUBVOLUME = "/home";
