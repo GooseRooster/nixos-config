@@ -306,6 +306,46 @@ fwupdmgr get-updates
 sudo passwd gooze
 ```
 
+### btrfs snapshots (snapper)
+
+Snapshots of `/` (config `root`) and `/home` (config `home`) are managed by
+`modules/core/snapper.nix`. Timelines run automatically (5 hourly / 7 daily /
+2 weekly / 1 monthly, cleaned up automatically) and a `root` snapshot is taken
+on every boot. `/nix` is never snapshotted — Nix generations cover the store.
+
+```sh
+# List snapshot configs and their settings
+snapper list-configs
+sudo snapper -c root get-config
+
+# List snapshots (timeline + boot snapshots)
+sudo snapper -c root list
+sudo snapper -c home list
+
+# Manual snapshot (e.g. before a risky change)
+sudo snapper -c root create --description "before kernel update"
+sudo snapper -c home create --description "before dotfile reshuffle"
+
+# See what changed between two snapshots (filenames, then line-level diff)
+sudo snapper -c root status 42..43
+sudo snapper -c root diff 42..43
+
+# Undo file changes between two snapshots (file-level restore, not a full
+# system rollback — use `nixos-rebuild switch --rollback` for system state)
+sudo snapper -c home undochange 42..43
+
+# Delete a snapshot (or a range)
+sudo snapper -c root delete 42
+sudo snapper -c home delete 100-110
+
+# Under the hood: snapshots are read-only btrfs subvolumes under
+# /.snapshots and /home/.snapshots — inspect them directly if needed
+sudo btrfs subvolume list /
+sudo btrfs subvolume show /home/.snapshots/42/snapshot
+```
+
+Don't delete snapshot subvolumes with `btrfs subvolume delete` — always go
+through `snapper delete`, otherwise snapper's metadata goes stale.
 
 
 
