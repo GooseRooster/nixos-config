@@ -40,5 +40,6 @@
     wl-clipboard
     playerctl
     statix
+    cava
   ];
 }

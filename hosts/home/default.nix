@@ -8,7 +8,10 @@
     ../../modules/desktop/gnome.nix
     ../../modules/desktop/gnome-devtools.nix
     ../../modules/desktop/gnome-settings.nix
+    ../../modules/desktop/gnome-dconf.nix
     ../../modules/desktop/gnome-extensions.nix
+    ../../modules/desktop/gnome-keybindings.nix
+    ../../modules/desktop/gnome-paperwm.nix
     ../../modules/core/podman.nix
     ../../modules/flatpak/base.nix
     ../../modules/flatpak/gaming.nix

@@ -1,8 +1,9 @@
 { lib, ... }:
 
 # Desktop plumbing shared by every host. A host imports this plus the GNOME
-# stack modules (gnome.nix + gnome-settings.nix + gnome-devtools.nix +
-# gnome-extensions.nix) to get a complete desktop.
+# stack modules (gnome.nix + gnome-settings.nix + gnome-dconf.nix +
+# gnome-devtools.nix + gnome-extensions.nix + gnome-keybindings.nix +
+# gnome-paperwm.nix) to get a complete desktop.
 {
   imports = [
     ./apps.nix

@@ -11,28 +11,23 @@ in
 {
   programs.dconf.enable = true;
 
-  programs.dconf.profiles.user.databases = [
-    {
-      settings = {
-        "org/gnome/desktop/interface" = {
-          # JetBrains Mono only as the monospace/terminal default — Nerd Fonts
-          # are awkward to get Flatpaks to respect as a UI font.
-          monospace-font-name = "JetBrainsMono Nerd Font Mono 11";
+  # Soft dconf defaults via the shared layer (see gnome-dconf.nix).
+  modules.gnome.dconf.settings = {
+    "org/gnome/desktop/interface" = {
+      monospace-font-name = "JetBrainsMono Nerd Font Mono 11";
 
-          font-name = "JetBrainsMono Nerd Font Mono Bold 12";
-          icon-theme = "Hatter-Slate";
-        };
+      font-name = "JetBrainsMono Nerd Font Mono Bold 12";
+      icon-theme = "Hatter-Slate";
+    };
 
-        # Legacy default-terminal key — still used by the gsd media-key /
-        # GNOME Shell "New Terminal" action. `Terminal=true` .desktop entries
-        # are handled by xdg.terminal-exec (see terminal.nix).
-        "org/gnome/desktop/default-applications/terminal" = {
-          exec = "ghostty";
-          exec-arg = "-e";
-        };
-      };
-    }
-  ];
+    # Legacy default-terminal key — still used by the gsd media-key /
+    # GNOME Shell "New Terminal" action. `Terminal=true` .desktop entries
+    # are handled by xdg.terminal-exec (see terminal.nix).
+    "org/gnome/desktop/default-applications/terminal" = {
+      exec = "ghostty";
+      exec-arg = "-e";
+    };
+  };
 
   # Same defaults for the GDM greeter via its own dconf profile.
   programs.dconf.profiles.gdm.databases = [

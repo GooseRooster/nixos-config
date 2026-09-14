@@ -1,6 +1,8 @@
 { config, lib, pkgs, inputs, ... }:
 
 let
+  gv = lib.gvariant;
+
   # Not in nixpkgs `gnomeExtensions` (and not on extensions.gnome.org), so
   # built from source. The sources come from the flake inputs (flake = false),
   # so they're version-pinned by flake.lock and updated by `nix flake update`.
@@ -15,7 +17,7 @@ let
     vitals                 # Vitals@CoreCoding.com
     clipboard-indicator    # clipboard-indicator@tudmotu.com
     weatherpanel           # weatherpanel@attentivecoder
-    medialine              # medialine@funinkina.co.in
+    dynamic-music-pill     # dynamic-music-pill@andbal
     lock-guard             # lock-guard@fthx
     wallpaper-slideshow    # azwallpaper@azwallpaper.gitlab.com
     mouse-follows-focus-2  # mouse-follows-focus@crisidev.org
@@ -54,13 +56,29 @@ in
   # below the user-db), so the user can still toggle any extension in
   # Extension Manager. Note `enabled-extensions` is a list-typed key, so any
   # manual toggle writes the whole list to the user db and overrides these.
-  programs.dconf.profiles.user.databases = [
-    {
-      settings = {
-        "org/gnome/shell" = {
-          enabled-extensions = map (e: e.extensionUuid) allExtensions;
-        };
-      };
-    }
-  ];
+  modules.gnome.dconf.settings = {
+    "org/gnome/shell" = {
+      enabled-extensions = map (e: e.extensionUuid) allExtensions;
+    };
+
+    # Ported from the previous user-side (manual) Dynamic Music Pill install.
+    # Playback history / first-hint state are intentionally not managed.
+    "org/gnome/shell/extensions/dynamic-music-pill" = {
+      enable-shadow = false;
+      enable-transparency = true;
+      hide-text = false;
+      panel-pill-width = gv.mkInt32 310;
+      popup-custom-width = gv.mkInt32 360;
+      popup-follow-transparency = false;
+      show-pill-border = true;
+      target-container = gv.mkInt32 1;
+      transparency-art = false;
+      transparency-strength = gv.mkInt32 0;
+      transparency-text = false;
+      transparency-vis = false;
+      visualizer-bars = gv.mkInt32 9;
+      visualizer-height = gv.mkInt32 44;
+      visualizer-style = gv.mkInt32 3;
+    };
+  };
 }
