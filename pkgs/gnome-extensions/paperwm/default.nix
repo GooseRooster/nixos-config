@@ -4,13 +4,19 @@ stdenv.mkDerivation {
   pname = "gnome-shell-extension-paperwm";
   version = "unstable";
 
+  # Mitigations for gnome-shell SIGSEGV in meta_window_update_monitor() during
+  # workspace switches (windows unmanaging while PaperWM's async callbacks run).
+  # Remove together with the upstream PR.
+  patches = [ ./stale-window-guards.patch ];
+
   inherit src;
 
   nativeBuildInputs = [ glib ];
 
   buildPhase = ''
     runHook preBuild
-    glib-compile-schemas --targetdir=schemas "$src/schemas"
+    # NOTE: operate on the unpacked (and patched) source tree, not $src
+    glib-compile-schemas --targetdir=schemas ./schemas
     runHook postBuild
   '';
 
@@ -18,8 +24,8 @@ stdenv.mkDerivation {
     runHook preInstall
     extdir="$out/share/gnome-shell/extensions/paperwm@paperwm.github.com"
     mkdir -p "$extdir"
-    cp "$src"/*.js "$src"/*.ui "$src"/stylesheet.css "$src"/metadata.json "$src"/LICENSE "$extdir/"
-    cp -r "$src"/resources "$src"/config "$extdir/"
+    cp ./*.js ./*.ui ./stylesheet.css ./metadata.json ./LICENSE "$extdir/"
+    cp -r ./resources ./config "$extdir/"
     cp -r schemas "$extdir/"
     runHook postInstall
   '';

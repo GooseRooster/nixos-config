@@ -1,0 +1,92 @@
+--- a/tiling.js	2026-09-18 20:40:56.066090372 +0200
++++ b/tiling.js	2026-09-18 20:40:56.089090207 +0200
+@@ -1384,6 +1384,11 @@
+             if (!actor)
+                 return;
+ 
++            // Guard against races with window teardown: an unmanaging window
++            // can crash mutter in meta_window_update_monitor().
++            if (w._paperwmUnmanaging)
++                return;
++
+             let placeable = this.isPlaceable(w);
+             if (placeable)
+                 this.visible.push(w);
+@@ -3652,6 +3657,14 @@
+                 period_ms: 100,
+                 count: 10,
+                 callback: () => {
++                    // The window may be unmanaging by the time this timeout
++                    // fires (e.g. closed during a workspace switch); calling
++                    // into mutter on it can segfault.
++                    if (metaWindow._paperwmUnmanaging || metaWindow.get_compositor_private() === null) {
++                        done(timeout);
++                        return false; // stop the timeout
++                    }
++
+                     const f = metaWindow.get_frame_rect();
+                     if (metaWindow._targetHeight !== f.height) {
+                         if (!isNaN(metaWindow._targetHeight)) {
+@@ -3673,6 +3686,12 @@
+         workspaceChangeTimeouts.push(timeout);
+     });
+ 
++    // 'unmanaging' is a signal (not a property) in mutter; mark the window
++    // so async callbacks can skip it instead of crashing in mutter
++    // (meta_window_update_monitor() dereferences torn-down state).
++    signals.connect(metaWindow, 'unmanaging', mw => {
++        mw._paperwmUnmanaging = true;
++    });
+     signals.connect(actor, 'destroy', destroyHandler);
+     return true;
+ }
+@@ -3781,6 +3800,12 @@
+     if (inGrab && inGrab.window === metaWindow)
+         return;
+ 
++    // Reached asynchronously (Meta.LaterType.RESIZE); the window may have
++    // started unmanaging in the meantime.
++    if (metaWindow._paperwmUnmanaging || metaWindow.get_compositor_private() === null) {
++        return;
++    }
++
+     const space = spaces.spaceOfWindow(metaWindow);
+     if (!space) {
+         return;
+--- a/utils.js	2026-09-18 20:40:56.066090372 +0200
++++ b/utils.js	2026-09-18 20:40:56.103157204 +0200
+@@ -548,10 +548,10 @@
+         let ids = this.get(object);
+         if (ids) {
+             if (id === null) {
+-                ids.forEach(id => object.disconnect(id));
++                ids.forEach(id => this._disconnect(object, id));
+                 ids = [];
+             } else {
+-                object.disconnect(id);
++                this._disconnect(object, id);
+                 let i = ids.indexOf(id);
+                 if (i > -1) {
+                     ids.splice(i, 1);
+@@ -562,9 +562,20 @@
+         }
+     }
+ 
++    // Objects can be disposed from the C side (GJS logs "has been already
++    // disposed" and "../gobject/gsignal.c: no handler with id"); disconnecting
++    // from such an object must not throw.
++    _disconnect(object, id) {
++        try {
++            object.disconnect(id);
++        } catch (e) {
++            console.warn(`Signals: failed to disconnect ${id} from ${object}: ${e}`);
++        }
++    }
++
+     destroy() {
+         for (let [object, signals] of this) {
+-            signals.forEach(id => object.disconnect(id));
++            signals.forEach(id => this._disconnect(object, id));
+             this.delete(object);
+         }
+     }
