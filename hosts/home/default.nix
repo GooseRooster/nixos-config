@@ -113,6 +113,9 @@
         # flag back) the termapp wrapper.
         home.modules.defaultShell = "zsh";
 
+	# nvim variant
+	home.modules.nvimVariant = "minimax";
+
       # nvim/yazi ship `Terminal=true` desktop entries (Exec=nvim/yazi). Override
       # them here (these land in ~/.local/share/applications, above the system
       # entries) so they launch through `termapp` instead: ghostty + a bootstrapped
