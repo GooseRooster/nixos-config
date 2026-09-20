@@ -16,7 +16,7 @@ in
     "org/gnome/desktop/interface" = {
       monospace-font-name = "JetBrainsMono Nerd Font Mono 11";
 
-      font-name = "JetBrainsMono Nerd Font Mono Bold 12";
+      font-name = "JetBrainsMono Nerd Font Mono Bold 11";
       icon-theme = "Hatter-Slate";
     };
 
@@ -34,7 +34,7 @@ in
     {
       settings = {
         "org/gnome/desktop/interface" = {
-          font-name = "JetBrainsMono Nerd Font Mono Bold 12";
+          font-name = "JetBrainsMono Nerd Font Mono Bold 11";
         };
       };
     }
