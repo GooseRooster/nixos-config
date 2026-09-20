@@ -33,6 +33,16 @@
   boot.initrd.luks.devices."luks-cef99b37-a347-4432-be60-8d04312cf661".device =
     "/dev/disk/by-uuid/cef99b37-a347-4432-be60-8d04312cf661";
 
+
+  # ntsync
+  # Load the ntsync kernel module at boot
+  boot.kernelModules = [ "ntsync" ];
+
+  # Let desktop users actually open /dev/ntsync
+  services.udev.extraRules = ''
+    KERNEL=="ntsync", TAG+="uaccess"
+  '';
+
   modules.users.primary = "gooze";
 
   # Pin the UID to the account the graphical installer created (first normal
