@@ -18,13 +18,11 @@
   # Firefox is native, not Flatpak (the org.mozilla.firefox flatpak was dropped).
   programs.firefox.enable = true;
 
-  # Emoji + general fallback fonts, plus the session default UI/mono font
-  # (Iosevka Nerd Font Mono; jetbrains-mono stays installed). CJK users may
-  # also want: noto-fonts-cjk-sans, noto-fonts-cjk-serif.
+  # Emoji + general fallback fonts. CJK users may also want:
+  # noto-fonts-cjk-sans, noto-fonts-cjk-serif.
   fonts.packages = with pkgs; [
     noto-fonts-color-emoji
     noto-fonts
     nerd-fonts.jetbrains-mono
-    nerd-fonts.iosevka
   ];
 }

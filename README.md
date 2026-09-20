@@ -1,11 +1,11 @@
 # nixos-config
 
-Flake-based NixOS configuration for a Flatpak-first, bluefin-like Noctalia desktop:
+Flake-based NixOS configuration for a Flatpak-first, bluefin-like GNOME desktop:
 
-- **Desktop**: [Noctalia v5](https://noctalia.dev/) + Umbriel (Wayland compositor) with **ly** as the display manager — the lightweight DE stack (`modules/desktop/noctalia.nix`). A GNOME stack (`gnome*.nix` modules) is kept as dormant code for an easy switch-back, but no host imports it.
-- **Font**: Iosevka Nerd Font Mono as the session default — ghostty, GTK3/libadwaita apps (`modules/gtk.nix` in the dotfiles repo) and the Noctalia shell.
-- **Theming**: Noctalia's builtin templates own app theming (ghostty, umbriel, GTK palette); gowall for wallpaper recoloring, see `modules/extras/theming.nix`. tinty + gnomad are gnome-session-only and dormant alongside the GNOME stack.
+- **Desktop**: minimal [GNOME](https://www.gnome.org) (GDM, Wayland-only). 
+- **Theming**: tinty + gnomad (schemes/colour-scheme) + gowall, see `modules/extras/theming.nix`.
 - **Apps**: declarative Flatpaks (see `modules/flatpak/`), GNOME core apps disabled; Some apps (Browsers, steam) are native due to various reasons (browser sandboxes behave better native, gaming packages sometimes perform better native. Steam needs native for Millenium if theming is enabled)
+- **Shell extensions**: (GNOME) declaratively installed via `pkgs.gnomeExtensions`
 - **Kernel**: nixpkgs kernel by default (`linuxPackages_latest`),
   with a per-host `latest` | `lts` fallback
 - **Hardening**: moderate kernel/sudo/ssh hardening (`modules/core/hardening.nix`)
@@ -15,13 +15,13 @@ CLI/dev applications are considered a per user concern (unless necessary for the
 
 ## Layout
 
-- `hosts/<name>/` — per-machine entrypoint (hostname, user, session stack, flatpaks, kernel, hardware)
+- `hosts/<name>/` — per-machine entrypoint (hostname, user, flatpaks, kernel, hardware)
 - `modules/base.nix` — shared core every host imports (core modules + defaults)
 - `modules/core/` — cross-host system modules (`system`, `kernel`, `perf`,
   `nix`, `users`, `hardening`, `maintenance`, `podman`, `secure-boot`)
 - `modules/desktop/` — shared desktop plumbing (`modules/desktop/default.nix`)
-  plus the session stack modules: `noctalia.nix` (active) and `gnome*.nix`
-  (dormant — kept for switch-backs)
+  plus the GNOME stack modules: `gnome.nix`, `gnome-settings.nix`,
+  `gnome-devtools.nix`, `gnome-extensions.nix`
 - `modules/flatpak/` — declarative flatpaks, split into toggle-able sets
 - `modules/extras/` — optional host extras (theming)
 - `quadlets/` — example podman quadlet files (system + rootless user templates)
@@ -31,14 +31,12 @@ CLI/dev applications are considered a per user concern (unless necessary for the
 
 - `modules/base.nix` — core modules + perf/hardening/maintenance defaults,
   imported by every host.
-- `modules/desktop/default.nix` — desktop plumbing shared by every session
-  stack (audio, portals, keyring, power, ...).
-- Session stack: a host imports exactly one of `modules/desktop/noctalia.nix`
-  or `modules/desktop/gnome.nix` (+ `gnome-settings.nix`, `gnome-devtools.nix`,
-  `gnome-extensions.nix`, ...). Each stack sets `modules.desktop.session`
-  via `mkDefault`, which gates its own config and mirrors into Home Manager.
+- `modules/desktop/default.nix` — desktop plumbing shared by every host
+  (audio, portals, keyring, power, ...).
+- GNOME stack: a host imports `modules/desktop/gnome.nix` plus
+  `gnome-settings.nix`, `gnome-devtools.nix` and `gnome-extensions.nix`.
 
-So `hosts/home` imports base + desktop + `noctalia.nix`. Per-host extras
+Every host imports base + desktop + the `gnome-*.nix` modules. Per-host extras
 (flatpak sets, gaming, theming, secure-boot, ...) are imported and enabled
 directly in the host file.
 
@@ -97,37 +95,13 @@ Declarative installs are handled by [nix-flatpak](https://github.com/gmodena/nix
 are installed from Flathub by default.
 
 
-## GNOME Shell extensions (dormant)
+## GNOME Shell extensions
 
-The GNOME stack's extensions live in `modules/desktop/gnome-extensions.nix`
-(via `pkgs.gnomeExtensions`, some as custom flakes). While every host runs the
-noctalia session these modules are unused, but stay ready for switch-backs.
+Extensions are installed declaratively in `modules/desktop/gnome-extensions.nix`
+via `pkgs.gnomeExtensions`. 
 
+Some extensions are pulled in as custom flakes if they are not available on EGO.
 
-## Switching session stack
-
-`modules/desktop/session.nix` exposes `modules.desktop.session`
-(`"noctalia"` | `"gnome"`). The active stack is selected by which stack module
-the host imports; to move a host between stacks, swap its stack-module import:
-
-```nix
-# hosts/<name>/default.nix — noctalia (current default):
-../../modules/desktop/noctalia.nix
-# ... or, to return to GNOME:
-../../modules/desktop/gnome.nix
-../../modules/desktop/gnome-devtools.nix
-../../modules/desktop/gnome-settings.nix
-../../modules/desktop/gnome-dconf.nix
-../../modules/desktop/gnome-extensions.nix
-../../modules/desktop/gnome-keybindings.nix
-../../modules/desktop/gnome-paperwm.nix
-```
-
-The option mirrors into Home Manager (`home.modules.session`), so
-session-gated dotfile content (ghostty theme, gtk theme-name, tinty/gnomad
-files) follows automatically. The dormant `gnome*.nix` modules and the
-`pkgs/gnome-extensions` packages are kept for that purpose, but unused while
-every host runs noctalia.
 
 ## Apply
 
@@ -291,17 +265,18 @@ sudo sbctl list-enrolled-keys
 
 ```sh
 # Apply changes (activate + add to boot menu)
+sudo nixos-rebuild switch --flake .#vm
 sudo nixos-rebuild switch --flake .#home
 
 # Dry-run: build without touching the running system
-nixos-rebuild dry-build --flake .#home
-nixos-rebuild dry-activate --flake .#home
+nixos-rebuild dry-build --flake .#vm
+nixos-rebuild dry-activate --flake .#vm
 
 # Activate only for this boot (reverts on reboot) — useful for risky changes
-sudo nixos-rebuild test --flake .#home
+sudo nixos-rebuild test --flake .#vm
 
 # Build and add to boot menu, activate on next reboot
-sudo nixos-rebuild boot --flake .#home
+sudo nixos-rebuild boot --flake .#vm
 
 # Roll back to the previous generation
 sudo nixos-rebuild switch --rollback
@@ -378,9 +353,8 @@ through `snapper delete`, otherwise snapper's metadata goes stale.
 
 ## Adding a host (e.g. WSL)
 
-Create `hosts/<name>/default.nix` importing `modules/base.nix`, the desktop
-plumbing (`modules/desktop/default.nix`) plus the session stack module it
-needs (`noctalia.nix`, or the `gnome*.nix` modules), set
+Create `hosts/<name>/default.nix` importing `modules/base.nix` plus the
+GNOME desktop modules it needs (desktop + `gnome*.nix`), set
 `modules.users.primary`, and add a matching `nixosConfigurations.<name>` in
 
 `flake.nix`.
