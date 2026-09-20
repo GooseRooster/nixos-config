@@ -185,6 +185,9 @@
   services.lact.enable = true;
   hardware.amdgpu.overdrive.enable = true;
 
+  # ntsync
+  hardware.ntsync.enable = true;
+
   # Firefox Developer Edition alongside regular Firefox for web dev work.
   # Dev Edition keeps its own dedicated profile directory, so the two
   # browsers never touch each other's state.
