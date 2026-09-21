@@ -277,11 +277,11 @@
     "paperwm": {
       "flake": false,
       "locked": {
-        "lastModified": 1785427773,
-        "narHash": "sha256-48k9PO5TFdQjopapVcph2kRLp10ORTAxWSqYpcclhpM=",
+        "lastModified": 1789969259,
+        "narHash": "sha256-UkyGrezAt9GFoMLW6T3uZIrF+KzelBDKxSCyGP87wjc=",
         "owner": "paperwm",
         "repo": "PaperWM",
-        "rev": "e9362e34d163c56cd038e62ac3e16a91c95ce527",
+        "rev": "01c5950cbb8847e32f614eded26b3cb38f25e919",
         "type": "github"
       },
       "original": {
