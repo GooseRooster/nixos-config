@@ -118,10 +118,6 @@
         # Rootless podman socket + docker->podman alias (lazydocker/lazypodman).
         home.modules.podmanAlias.enable = true;
 
-        # zsh as the default interactive shell. Drives the dotfiles' ghostty
-        # `command` and (via modules/desktop/terminal.nix reading this same
-        # flag back) the termapp wrapper.
-        home.modules.defaultShell = "zsh";
 
 
       # nvim/yazi ship `Terminal=true` desktop entries (Exec=nvim/yazi). Override
