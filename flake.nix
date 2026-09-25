@@ -30,9 +30,6 @@
       flake = false;
     };
 
-    # CLI batteries now live in the home-manager repo (home.bundles.* in
-    # home.packages) — no separate flake input.
-
     # GNOME colour-scheme TUI (theming). Safe to follow our nixpkgs.
     gnomad.url = "github:GooseRooster/gnomad";
     gnomad.inputs.nixpkgs.follows = "nixpkgs";
