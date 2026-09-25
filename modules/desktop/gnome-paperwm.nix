@@ -7,6 +7,7 @@
 # All values are soft defaults (see gnome-dconf.nix).
 {
   lib,
+  pkgs,
   ...
 }:
 
@@ -81,5 +82,24 @@ in
       toggle-scratch-layer = [ "" ];
       toggle-scratch-window = [ "" ];
     };
+  };
+
+  # PaperWM seeds ~/.config/paperwm/{user.css,metadata.json} itself by copying
+  # them out of its read-only nix store extension dir (updateUserConfigFiles in
+  # extension.js); Gio.FileCopyFlags preserves the store's 0444 mode, so those
+  # files land read-only and stay that way — and its metadata re-copy then
+  # fails on every enable. This oneshot makes them user-writable again at
+  # session start so user.css can be edited on the fly (rebuild-free theming;
+  # reload = disable + re-enable PaperWM). Idempotent chmod, safe to rerun.
+  systemd.user.services.paperwm-writable-config = {
+    description = "Make PaperWM user config files writable";
+    wantedBy = [ "graphical-session.target" ];
+    wants = [ "graphical-session.target" ];
+    after = [ "graphical-session.target" ];
+    serviceConfig = {
+      Type = "oneshot";
+      ExecStart = "${pkgs.bash}/bin/bash -c '${pkgs.coreutils}/bin/chmod --quiet u+w %h/.config/paperwm/user.css %h/.config/paperwm/metadata.json 2>/dev/null || true'";
+    };
+    unitConfig.ConditionPathExists = "%h/.config/paperwm";
   };
 }

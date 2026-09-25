@@ -56,9 +56,17 @@ in
   # below the user-db), so the user can still toggle any extension in
   # Extension Manager. Note `enabled-extensions` is a list-typed key, so any
   # manual toggle writes the whole list to the user db and overrides these.
+  #
+  # `disable-extension-version-validation` lets the shell load extensions whose
+  # declared shell-version doesn't include the running version — handy right
+  # after a GNOME update, when extensions often still work but their metadata
+  # hasn't been bumped yet (a per-extension override in Extension Manager does
+  # the same thing one at a time).
   modules.gnome.dconf.settings = {
     "org/gnome/shell" = {
       enabled-extensions = map (e: e.extensionUuid) allExtensions;
+
+      disable-extension-version-validation = true;
     };
 
     # Ported from the previous user-side (manual) Dynamic Music Pill install.
