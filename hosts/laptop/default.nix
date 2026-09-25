@@ -113,8 +113,7 @@
           };
         };
 
-        # Feature flags for the dotfiles modules (formerly hosts/desktop.nix
-        # in the dotfiles repo, which no longer carries per-host files).
+        # Feature flags for the dotfiles modules
         home.bundles.baseExtra.enable = true; # desktop extras (fonts, vscode, …)
         home.modules.gaming.enable = true;
         home.modules.theming.enable = true;
@@ -123,8 +122,7 @@
 
         # nvim/yazi ship `Terminal=true` desktop entries (Exec=nvim/yazi). Override
         # them here (these land in ~/.local/share/applications, above the system
-        # entries) so they launch through `termapp` instead: ghostty + a bootstrapped
-        # nushell env, not a bare terminal command that skips env.nu.
+        # entries) so they launch through `termapp` instead
         xdg.desktopEntries = {
           nvim = {
             name = "Neovim";

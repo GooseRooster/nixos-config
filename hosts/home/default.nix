@@ -1,4 +1,10 @@
-{ inputs, config, lib, pkgs, ... }:
+{
+  inputs,
+  config,
+  lib,
+  pkgs,
+  ...
+}:
 
 {
   imports = [
@@ -32,7 +38,6 @@
   # configuration.nix (not hardware-configuration.nix), so carry it over here.
   boot.initrd.luks.devices."luks-cef99b37-a347-4432-be60-8d04312cf661".device =
     "/dev/disk/by-uuid/cef99b37-a347-4432-be60-8d04312cf661";
-
 
   # ntsync
   # Load the ntsync kernel module at boot
@@ -87,73 +92,78 @@
         '';
       in
       {
-      imports = [
-        inputs.dotfiles.hmModules.default
-        inputs.zen-browser.homeModules.twilight
-      ];
+        imports = [
+          inputs.dotfiles.hmModules.default
+          inputs.zen-browser.homeModules.twilight
+        ];
 
-      # Zen Browser, native (browser sandboxes behave better native than
-      # flatpak). Default browser; Firefox stays installed as the backup.
-      # Launch as `zen-twilight`.
-      programs.zen-browser = {
-        enable = true;
-        setAsDefaultBrowser = true;
+        # Zen Browser, native (browser sandboxes behave better native than
+        # flatpak). Default browser; Firefox stays installed as the backup.
+        # Launch as `zen-twilight`.
+        programs.zen-browser = {
+          enable = true;
+          setAsDefaultBrowser = true;
 
-        # Light de-bloat; keep Zen's own update checker disabled since the
-        # flake manages versions (twilight artifacts are pinned in flake.lock).
-        policies = {
-          DisableTelemetry = true;
-          DisableFirefoxStudies = true;
-          DisablePocket = true;
-          DontCheckDefaultBrowser = true;
-          DisableAppUpdate = true;
+          # Light de-bloat; keep Zen's own update checker disabled since the
+          # flake manages versions (twilight artifacts are pinned in flake.lock).
+          policies = {
+            DisableTelemetry = true;
+            DisableFirefoxStudies = true;
+            DisablePocket = true;
+            DontCheckDefaultBrowser = true;
+            DisableAppUpdate = true;
+          };
         };
-      };
 
-        # Feature flags for the dotfiles modules (formerly hosts/desktop.nix
-        # in the dotfiles repo, which no longer carries per-host files).
+        # Feature flags for the dotfiles modules
         home.bundles.baseExtra.enable = true; # desktop extras (fonts, vscode, …)
         home.modules.gaming.enable = true;
         home.modules.theming.enable = true;
         # Rootless podman socket + docker->podman alias (lazydocker/lazypodman).
         home.modules.podmanAlias.enable = true;
 
-
-
-      # nvim/yazi ship `Terminal=true` desktop entries (Exec=nvim/yazi). Override
-      # them here (these land in ~/.local/share/applications, above the system
-      # entries) so they launch through `termapp` instead: ghostty + a bootstrapped
-      # nushell env, not a bare terminal command that skips env.nu.
-      xdg.desktopEntries = {
-        nvim = {
-          name = "Neovim";
-          genericName = "Text Editor";
-          exec = "termapp nvim %F";
-          icon = "nvim";
-          terminal = false;
-          type = "Application";
-          categories = [ "Utility" "TextEditor" "Development" ];
-          mimeType = [ "text/plain" ];
+        # nvim/yazi ship `Terminal=true` desktop entries (Exec=nvim/yazi). Override
+        # them here (these land in ~/.local/share/applications, above the system
+        # entries) so they launch through `termapp` instead
+        xdg.desktopEntries = {
+          nvim = {
+            name = "Neovim";
+            genericName = "Text Editor";
+            exec = "termapp nvim %F";
+            icon = "nvim";
+            terminal = false;
+            type = "Application";
+            categories = [
+              "Utility"
+              "TextEditor"
+              "Development"
+            ];
+            mimeType = [ "text/plain" ];
+          };
+          yazi = {
+            name = "Yazi File Manager";
+            exec = "termapp yazi %f";
+            icon = "yazi";
+            terminal = false;
+            type = "Application";
+            categories = [
+              "System"
+              "FileManager"
+              "FileTools"
+            ];
+            mimeType = [ "text/plain" ];
+          };
         };
-        yazi = {
-          name = "Yazi File Manager";
-          exec = "termapp yazi %f";
-          icon = "yazi";
-          terminal = false;
-          type = "Application";
-          categories = [ "System" "FileManager" "FileTools" ];
-          mimeType = [ "text/plain" ];
-        };
+
+        # systemd drop-in for the transient unit generated from mini-eq's
+        # ~/.config/autostart entry (rationale in miniEqSinkWait above). The
+        # directory name carries systemd's escaped form of the unit name.
+        xdg.configFile."systemd/user/app-io.github.bhack.mini\\x2deq@autostart.service.d/override.conf".text =
+          ''
+            [Service]
+            ExecStartPre=${miniEqSinkWait}
+          '';
       };
-
-      # systemd drop-in for the transient unit generated from mini-eq's
-      # ~/.config/autostart entry (rationale in miniEqSinkWait above). The
-      # directory name carries systemd's escaped form of the unit name.
-      xdg.configFile."systemd/user/app-io.github.bhack.mini\\x2deq@autostart.service.d/override.conf".text = ''
-        [Service]
-        ExecStartPre=${miniEqSinkWait}
-      '';
-    };
   };
 
   modules.flatpak.enable = true;
@@ -190,7 +200,6 @@
   # AMD GPU: overdrive unlocks the OC/underclock controls in LACT.
   services.lact.enable = true;
   hardware.amdgpu.overdrive.enable = true;
-
 
   # Firefox Developer Edition alongside regular Firefox for web dev work.
   # Dev Edition keeps its own dedicated profile directory, so the two
