@@ -17,7 +17,6 @@
     ./core/maintenance.nix
     ./core/gnupg.nix
     ./core/auto-upgrade.nix
-    ./core/snapper.nix
   ];
 
   modules.perf.enable = true;
@@ -35,5 +34,8 @@
   ];
 
   # Base groups every host gets; hosts override with their own list.
-  modules.users.extraGroups = lib.mkDefault [ "wheel" "networkmanager" ];
+  modules.users.extraGroups = lib.mkDefault [
+    "wheel"
+    "networkmanager"
+  ];
 }

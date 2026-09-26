@@ -2,7 +2,7 @@
 
 Flake-based NixOS configuration for a Flatpak-first, bluefin-like GNOME desktop:
 
-- **Desktop**: minimal [GNOME](https://www.gnome.org) (GDM, Wayland-only). 
+- **Desktop**: minimal [GNOME](https://www.gnome.org) (GDM, Wayland-only).
 - **Theming**: tinty + gnomad (schemes/colour-scheme) + gowall, see `modules/extras/theming.nix`.
 - **Apps**: declarative Flatpaks (see `modules/flatpak/`), GNOME core apps disabled; Some apps (Browsers, steam) are native due to various reasons (browser sandboxes behave better native, gaming packages sometimes perform better native. Steam needs native for Millenium if theming is enabled)
 - **Shell extensions**: (GNOME) declaratively installed via `pkgs.gnomeExtensions`
@@ -11,7 +11,7 @@ Flake-based NixOS configuration for a Flatpak-first, bluefin-like GNOME desktop:
 - **Hardening**: moderate kernel/sudo/ssh hardening (`modules/core/hardening.nix`)
 - **Maintenance**: automatic GC + store optimisation + fwupd
 
-CLI/dev applications are considered a per user concern (unless necessary for the baseline system) and are thus pulled in as Flake inputs through Home Manager. 
+CLI/dev applications are considered a per user concern (unless necessary for the baseline system) and are thus pulled in as Flake inputs through Home Manager.
 
 ## Layout
 
@@ -98,7 +98,7 @@ are installed from Flathub by default.
 ## GNOME Shell extensions
 
 Extensions are installed declaratively in `modules/desktop/gnome-extensions.nix`
-via `pkgs.gnomeExtensions`. 
+via `pkgs.gnomeExtensions`.
 
 Some extensions are pulled in as custom flakes if they are not available on EGO.
 
@@ -115,9 +115,7 @@ sudo nixos-rebuild boot --flake .#home
 
 The disk is set up by the **graphical** NixOS installer: a single
 NVMe with an ESP at `/boot`, a LUKS-encrypted btrfs root with `home` and `nix`
-subvolumes, and a separate encrypted swap partition. The flake's
-`modules/core/snapper.nix` snapshots `/` and `/home` (skipping `/nix`), which
-matches that layout.
+subvolumes, and a separate encrypted swap partition.
 
 ### 1. Install with the graphical installer
 
@@ -161,17 +159,9 @@ boot.initrd.luks.devices."luks-cef99b37-a347-4432-be60-8d04312cf661".device =
 Confirm `system.stateVersion` in `hosts/<yourhost>/default.nix` matches the value in
 `/etc/nixos/configuration.nix`
 
-### 4. Verify the btrfs layout matches the snapshot config
 
-```sh
-sudo btrfs subvolume list /
-```
 
-Expect `home` and `nix` subvolumes (mounted at `/home` and `/nix`); the root
-filesystem is the top-level subvolume. The snapper module snapshots `/` and
-`/home` (skipping `/nix`), which this layout satisfies.
-
-### 5. Switch to the flake
+### 4. Switch to the flake
 
 ```sh
 sudo nixos-rebuild boot --flake .#<yourhost>
@@ -305,50 +295,6 @@ fwupdmgr get-updates
 # Set the declarative user's password (first boot)
 sudo passwd gooze
 ```
-
-### btrfs snapshots (snapper)
-
-Snapshots of `/` (config `root`) and `/home` (config `home`) are managed by
-`modules/core/snapper.nix`. Timelines run automatically (5 hourly / 7 daily /
-2 weekly / 1 monthly, cleaned up automatically) and a `root` snapshot is taken
-on every boot. `/nix` is never snapshotted — Nix generations cover the store.
-
-```sh
-# List snapshot configs and their settings
-snapper list-configs
-sudo snapper -c root get-config
-
-# List snapshots (timeline + boot snapshots)
-sudo snapper -c root list
-sudo snapper -c home list
-
-# Manual snapshot (e.g. before a risky change)
-sudo snapper -c root create --description "before kernel update"
-sudo snapper -c home create --description "before dotfile reshuffle"
-
-# See what changed between two snapshots (filenames, then line-level diff)
-sudo snapper -c root status 42..43
-sudo snapper -c root diff 42..43
-
-# Undo file changes between two snapshots (file-level restore, not a full
-# system rollback — use `nixos-rebuild switch --rollback` for system state)
-sudo snapper -c home undochange 42..43
-
-# Delete a snapshot (or a range)
-sudo snapper -c root delete 42
-sudo snapper -c home delete 100-110
-
-# Under the hood: snapshots are read-only btrfs subvolumes under
-# /.snapshots and /home/.snapshots — inspect them directly if needed
-sudo btrfs subvolume list /
-sudo btrfs subvolume show /home/.snapshots/42/snapshot
-```
-
-Don't delete snapshot subvolumes with `btrfs subvolume delete` — always go
-through `snapper delete`, otherwise snapper's metadata goes stale.
-
-
-
 
 
 ## Adding a host (e.g. WSL)

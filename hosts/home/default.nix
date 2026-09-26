@@ -183,9 +183,6 @@
   # plus a flatpak-accessible copy in ~/.local/bin.
   modules.gamePerformance.enable = true;
 
-  # btrfs snapshots of / and /home (rollback for data, unlike Nix generations).
-  modules.snapper.enable = false;
-
   # GNOME (GDM + GNOME Shell) with tinty + gnomad owning theming
   # (modules/extras/theming.nix).
 
