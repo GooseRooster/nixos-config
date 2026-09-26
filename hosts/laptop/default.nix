@@ -38,6 +38,7 @@
   # The graphical installer created an encrypted swap partition (separate from
   # the root LUKS container). Its unlock entry is written to the installer's
   # configuration.nix (not hardware-configuration.nix), so carry it over here.
+  boot.initrd.luks.devices."luks-dffd0ff3-06ef-4b5e-866f-1c12388a477c".device = "/dev/disk/by-uuid/dffd0ff3-06ef-4b5e-866f-1c12388a477c";
 
   # ntsync
   # Load the ntsync kernel module at boot
