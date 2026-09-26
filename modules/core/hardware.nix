@@ -7,9 +7,7 @@
   # (already set in modules/core/nix.nix). Harmless in VMs.
   hardware.enableAllFirmware = true;
 
-  # AMD CPU microcode updates (e.g. Ryzen 7800X3D). If a host is Intel, set
-  # `hardware.cpu.intel.updateMicrocode = true` there instead.
-  hardware.cpu.amd.updateMicrocode = true;
+
 
   # Compressed RAM swap (Bluefin-style). Sits above any on-disk swap partition
   # and gives much lower-latency swapping. Sizing inspired by CachyOS: full RAM,

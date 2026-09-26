@@ -32,6 +32,8 @@
   ];
 
   networking.hostName = "nixos";
+  
+  hardware.cpu.intel.updateMicrocode = true
 
   # The graphical installer created an encrypted swap partition (separate from
   # the root LUKS container). Its unlock entry is written to the installer's
