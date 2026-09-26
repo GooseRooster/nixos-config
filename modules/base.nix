@@ -23,6 +23,14 @@
   modules.hardening.enable = true;
   modules.maintenance.enable = true;
 
+  # zsh as the login shell (see core/users.nix for the per-user assignment).
+  # Adds zsh to the system closure + /etc/shells. compinit stays owned by
+  # home-manager's programs.zsh (~/.zshrc) — disabling the global call avoids
+  # a double compinit and preserves the ordering HM's config relies on
+  # (fzf-tab/carapace).
+  programs.zsh.enable = true;
+  programs.zsh.enableGlobalCompInit = false;
+
   # Escape hatch for prebuilt dynamically-linked (glibc) binaries — NixOS
   # otherwise ships a stub /lib64/ld-linux-x86-64.so.2 and they die with
   # "libstdc++.so.6 => not found". Needed for certain stacks' LSPs (Rust, Dotnet)

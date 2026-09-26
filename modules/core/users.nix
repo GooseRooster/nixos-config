@@ -1,4 +1,4 @@
-{ config, lib, ... }:
+{ config, lib, pkgs, ... }:
 
 let
   cfg = config.modules.users;
@@ -42,6 +42,9 @@ in
     users.users.${cfg.primary} = {
       isNormalUser = true;
       extraGroups = cfg.extraGroups;
+      # Declarative login shell; `programs.zsh.enable` (modules/base.nix) keeps
+      # it in /etc/shells. Re-login for $SHELL to update.
+      shell = pkgs.zsh;
     }
     // lib.optionalAttrs (cfg.uid != null) {
       uid = cfg.uid;
