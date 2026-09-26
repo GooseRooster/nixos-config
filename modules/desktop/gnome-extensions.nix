@@ -1,4 +1,10 @@
-{ config, lib, pkgs, inputs, ... }:
+{
+  config,
+  lib,
+  pkgs,
+  inputs,
+  ...
+}:
 
 let
   gv = lib.gvariant;
@@ -7,28 +13,31 @@ let
   # built from source. The sources come from the flake inputs (flake = false),
   # so they're version-pinned by flake.lock and updated by `nix flake update`.
   custom = {
-    gradia-capture = pkgs.callPackage ../../pkgs/gnome-extensions/gradia-capture { src = inputs.gradia-capture; };
-    bazaar-companion = pkgs.callPackage ../../pkgs/gnome-extensions/bazaar-companion { src = inputs.bazaar-companion; };
+    gradia-capture = pkgs.callPackage ../../pkgs/gnome-extensions/gradia-capture {
+      src = inputs.gradia-capture;
+    };
+    bazaar-companion = pkgs.callPackage ../../pkgs/gnome-extensions/bazaar-companion {
+      src = inputs.bazaar-companion;
+    };
     paperwm = pkgs.callPackage ../../pkgs/gnome-extensions/paperwm { src = inputs.paperwm; };
   };
 
   upstream = with pkgs.gnomeExtensions; [
-    user-themes            # user-theme@gnome-shell-extensions.gcampax.github.com
-    vitals                 # Vitals@CoreCoding.com
-    clipboard-indicator    # clipboard-indicator@tudmotu.com
-    weatherpanel           # weatherpanel@attentivecoder
-    dynamic-music-pill     # dynamic-music-pill@andbal
-    lock-guard             # lock-guard@fthx
-    wallpaper-slideshow    # azwallpaper@azwallpaper.gitlab.com
-    mouse-follows-focus-2  # mouse-follows-focus@crisidev.org
-    grand-theft-focus      # grand-theft-focus@zalckos.github.com
+    user-themes # user-theme@gnome-shell-extensions.gcampax.github.com
+    vitals # Vitals@CoreCoding.com
+    clipboard-indicator # clipboard-indicator@tudmotu.com
+    weatherpanel # weatherpanel@attentivecoder
+    dynamic-music-pill # dynamic-music-pill@andbal
+    lock-guard # lock-guard@fthx
+    wallpaper-slideshow # azwallpaper@azwallpaper.gitlab.com
+    mouse-follows-focus-2 # mouse-follows-focus@crisidev.org
+    grand-theft-focus # grand-theft-focus@zalckos.github.com
     esp-extensions-search-provider # extensions-search-provider@G-dH.github.com
-    vertical-workspaces    # vertical-workspaces@G-dH.github.com (V-Shell)
+    vertical-workspaces # vertical-workspaces@G-dH.github.com (V-Shell)
     wsp-windows-search-provider # windows-search-provider@G-dH.github.com
     wtmb-window-thumbnails # window-thumbnails@G-dH.github.com
-    blur-my-shell          # blur-my-shell@aunetx
-    caffeine               # caffeine@patapon.info
-    gsconnect              # gsconnect@andyholmes.github.io
+    caffeine # caffeine@patapon.info
+    gsconnect # gsconnect@andyholmes.github.io
   ];
 
   # Caffeine ships its cup icons only inside the extension directory, which
