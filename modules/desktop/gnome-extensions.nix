@@ -26,18 +26,17 @@ let
     user-themes # user-theme@gnome-shell-extensions.gcampax.github.com
     vitals # Vitals@CoreCoding.com
     clipboard-indicator # clipboard-indicator@tudmotu.com
-    weatherpanel # weatherpanel@attentivecoder
-    dynamic-music-pill # dynamic-music-pill@andbal
     lock-guard # lock-guard@fthx
     wallpaper-slideshow # azwallpaper@azwallpaper.gitlab.com
     mouse-follows-focus-2 # mouse-follows-focus@crisidev.org
-    grand-theft-focus # grand-theft-focus@zalckos.github.com
     esp-extensions-search-provider # extensions-search-provider@G-dH.github.com
     vertical-workspaces # vertical-workspaces@G-dH.github.com (V-Shell)
     wsp-windows-search-provider # windows-search-provider@G-dH.github.com
     wtmb-window-thumbnails # window-thumbnails@G-dH.github.com
     caffeine # caffeine@patapon.info
     gsconnect # gsconnect@andyholmes.github.io
+    nowplaying # nowplaying@epogonii.github.io
+    weatherornot # weatherornot@somepaulo.github.io
   ];
 
   # Caffeine ships its cup icons only inside the extension directory, which
@@ -78,24 +77,5 @@ in
       disable-extension-version-validation = true;
     };
 
-    # Ported from the previous user-side (manual) Dynamic Music Pill install.
-    # Playback history / first-hint state are intentionally not managed.
-    "org/gnome/shell/extensions/dynamic-music-pill" = {
-      enable-shadow = false;
-      enable-transparency = true;
-      hide-text = false;
-      panel-pill-width = gv.mkInt32 310;
-      popup-custom-width = gv.mkInt32 360;
-      popup-follow-transparency = false;
-      show-pill-border = true;
-      target-container = gv.mkInt32 1;
-      transparency-art = false;
-      transparency-strength = gv.mkInt32 0;
-      transparency-text = false;
-      transparency-vis = false;
-      visualizer-bars = gv.mkInt32 9;
-      visualizer-height = gv.mkInt32 44;
-      visualizer-style = gv.mkInt32 3;
-    };
   };
 }
