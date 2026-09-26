@@ -22,6 +22,10 @@
       url = "github:paperwm/PaperWM/develop";
       flake = false;
     };
+    nowplaying-card = {
+      url = "github:epogonii/nowplaying-card";
+      flake = false;
+    };
 
     # Hatter icon theme (not in nixpkgs). Pinned the same way as the
     # extensions above; packaged in pkgs/hatter.

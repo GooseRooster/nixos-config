@@ -18,6 +18,11 @@
     ../../modules/desktop/gnome-extensions.nix
     ../../modules/desktop/gnome-keybindings.nix
     ../../modules/desktop/gnome-paperwm.nix
+    ../../modules/desktop/gnome-nowplaying.nix
+    ../../modules/desktop/gnome-weatherornot.nix
+    ../../modules/desktop/gnome-clipboard-indicator.nix
+    ../../modules/desktop/gnome-search-providers.nix
+    ../../modules/desktop/gnome-vshell.nix
     ../../modules/core/podman.nix
     ../../modules/flatpak/base.nix
     ../../modules/flatpak/gaming.nix

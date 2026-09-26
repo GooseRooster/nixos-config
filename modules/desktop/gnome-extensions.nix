@@ -20,6 +20,9 @@ let
       src = inputs.bazaar-companion;
     };
     paperwm = pkgs.callPackage ../../pkgs/gnome-extensions/paperwm { src = inputs.paperwm; };
+    nowplaying = pkgs.callPackage ../../pkgs/gnome-extensions/nowplaying {
+      src = inputs.nowplaying-card;
+    };
   };
 
   upstream = with pkgs.gnomeExtensions; [
@@ -35,8 +38,7 @@ let
     wtmb-window-thumbnails # window-thumbnails@G-dH.github.com
     caffeine # caffeine@patapon.info
     gsconnect # gsconnect@andyholmes.github.io
-    nowplaying # nowplaying@epogonii.github.io
-    weatherornot # weatherornot@somepaulo.github.io
+    weather-or-not # weatherornot@somepaulo.github.io
   ];
 
   # Caffeine ships its cup icons only inside the extension directory, which

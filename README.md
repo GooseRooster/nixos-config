@@ -21,7 +21,10 @@ CLI/dev applications are considered a per user concern (unless necessary for the
   `nix`, `users`, `hardening`, `maintenance`, `podman`, `secure-boot`)
 - `modules/desktop/` — shared desktop plumbing (`modules/desktop/default.nix`)
   plus the GNOME stack modules: `gnome.nix`, `gnome-settings.nix`,
-  `gnome-devtools.nix`, `gnome-extensions.nix`
+  `gnome-devtools.nix`, `gnome-extensions.nix`, and per-extension dconf defaults
+  (`gnome-paperwm.nix`, `gnome-nowplaying.nix`, `gnome-weatherornot.nix`,
+  `gnome-clipboard-indicator.nix`, `gnome-search-providers.nix`,
+  `gnome-vshell.nix`)
 - `modules/flatpak/` — declarative flatpaks, split into toggle-able sets
 - `modules/extras/` — optional host extras (theming)
 - `quadlets/` — example podman quadlet files (system + rootless user templates)
@@ -34,7 +37,10 @@ CLI/dev applications are considered a per user concern (unless necessary for the
 - `modules/desktop/default.nix` — desktop plumbing shared by every host
   (audio, portals, keyring, power, ...).
 - GNOME stack: a host imports `modules/desktop/gnome.nix` plus
-  `gnome-settings.nix`, `gnome-devtools.nix` and `gnome-extensions.nix`.
+  `gnome-settings.nix`, `gnome-devtools.nix`, `gnome-extensions.nix` and the
+  per-extension settings modules (`gnome-paperwm.nix`, `gnome-nowplaying.nix`,
+  `gnome-weatherornot.nix`, `gnome-clipboard-indicator.nix`,
+  `gnome-search-providers.nix`, `gnome-vshell.nix`).
 
 Every host imports base + desktop + the `gnome-*.nix` modules. Per-host extras
 (flatpak sets, gaming, theming, secure-boot, ...) are imported and enabled
@@ -101,6 +107,9 @@ Extensions are installed declaratively in `modules/desktop/gnome-extensions.nix`
 via `pkgs.gnomeExtensions`.
 
 Some extensions are pulled in as custom flakes if they are not available on EGO.
+
+Per-extension settings are declared as dconf *defaults* (soft defaults, still
+overridable in the UI) in the matching `modules/desktop/gnome-*.nix` module.
 
 
 ## Apply

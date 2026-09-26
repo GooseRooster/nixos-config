@@ -274,6 +274,22 @@
         "type": "github"
       }
     },
+    "nowplaying-card": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1790184384,
+        "narHash": "sha256-m4g3tpn5wteSurGSzmSq06ifvEe1jAf0eMha97Y6YKA=",
+        "owner": "epogonii",
+        "repo": "nowplaying-card",
+        "rev": "1b9084e048d67b6636074cb579b383dcffc377cf",
+        "type": "github"
+      },
+      "original": {
+        "owner": "epogonii",
+        "repo": "nowplaying-card",
+        "type": "github"
+      }
+    },
     "paperwm": {
       "flake": false,
       "locked": {
@@ -326,6 +342,7 @@
         "millennium": "millennium",
         "nix-flatpak": "nix-flatpak",
         "nixpkgs": "nixpkgs_2",
+        "nowplaying-card": "nowplaying-card",
         "paperwm": "paperwm",
         "zen-browser": "zen-browser"
       }
