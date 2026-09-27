@@ -46,10 +46,13 @@
     dotfiles.inputs.home-manager.follows = "home-manager";
     dotfiles.inputs.nixpkgs.follows = "nixpkgs";
 
-    # Steam Millennium (theme/plugin framework for the Steam client). Its
-    # sub-flake pins its own nixpkgs and exposes an overlay providing
-    # `millennium-steam` for programs.steam.package (see modules/gaming/steam.nix).
-    millennium.url = "github:SteamClientHomebrew/Millennium?dir=packages/nix";
+    # Steam skin that makes the client look native (replaces Millennium, see
+    # modules/gaming/steam.nix). Pinned as flake = false like the extensions:
+    # install.py runs from this source tree at activation/refresh time.
+    adwaita-for-steam = {
+      url = "github:tkashkin/Adwaita-for-Steam";
+      flake = false;
+    };
 
     # Zen Browser (native, not the Flatpak). Community flake, twilight
     # variant for reproducible artifact pinning.
