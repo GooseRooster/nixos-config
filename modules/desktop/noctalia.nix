@@ -8,6 +8,11 @@
 
 let
   isNoctalia = config.modules.desktop.session == "noctalia";
+
+  # Not in nixpkgs, so built from source. Pinned as a flake input
+  # (flake = false), see pkgs/hatter. The GNOME stack installs it from
+  # gnome-settings.nix; the noctalia session needs it here.
+  hatter = pkgs.callPackage ../../pkgs/hatter { src = inputs.hatter; };
 in
 {
   # Identify the stack this module provides (see session.nix). mkDefault so a
@@ -74,6 +79,10 @@ in
       # without it.
       environment.systemPackages = [
         pkgs.adw-gtk3
+
+        # Hatter icon theme (icons for the shell + GTK apps; the icon-theme
+        # name is set in the dotfiles' gtk module).
+        hatter
 
         # GTK settings editor for wlroots-style sessions (Noctalia docs'
         # recommended way to (re)apply adw-gtk3). One-time use: select
