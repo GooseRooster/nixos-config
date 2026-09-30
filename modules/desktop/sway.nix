@@ -72,5 +72,14 @@ in
       "org.freedesktop.impl.portal.GlobalShortcuts" = [ "gnome" ];
       "org.freedesktop.impl.portal.Secret" = [ "oo7-portal" ];
     };
+
+    # Sway has no session manager, so nothing starts the XDG autostart units
+    # systemd-xdg-autostart-generator creates from ~/.config/autostart (e.g.
+    # the flatpak Background portal writes mini-eq's entry there at runtime).
+    # Pull in systemd's target for exactly this case: DEs that don't manage
+    # autostart themselves. Without it the units are generated but never run.
+    systemd.user.targets.graphical-session.wants = [
+      "xdg-autostart-if-no-desktop-manager.target"
+    ];
   };
 }
