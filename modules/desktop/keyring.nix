@@ -1,9 +1,12 @@
-{ config, pkgs, lib, ... }:
-
 {
-  # gnome-keyring + gcr-ssh-agent are enabled by GNOME's core-os-services.
-  # GDM's gdm-password substacks `login` and gdm-autologin reads
-  # login.enableGnomeKeyring to inject pam_gnome_keyring.so, so enabling it on
-  # the `login` service unlocks the keyring at both GDM and TTY login.
-  security.pam.services.login.enableGnomeKeyring = true;
+  # SSH agent for every desktop session. gnome-keyring dropped its SSH
+  # component in gcr 4; gcr-ssh-agent provides it now, independent of the
+  # Secret Service. It exposes its socket at $XDG_RUNTIME_DIR/gcr/ssh and sets
+  # SSH_AUTH_SOCK in the systemd user environment — which a bare Sway session
+  # never imports, so modules/desktop/sway.nix exports it explicitly.
+  #
+  # The Secret Service itself is stack-specific and enabled by the stack
+  # module: gnome-keyring (GNOME stack) or oo7 (noctalia stack). Each wires its
+  # own PAM login auto-unlock hook.
+  services.gnome.gcr-ssh-agent.enable = true;
 }
