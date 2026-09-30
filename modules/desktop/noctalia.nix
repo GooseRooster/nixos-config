@@ -74,6 +74,12 @@ in
       # org.freedesktop.secrets. The SSH agent (gcr-ssh-agent) is separate and
       # lives in keyring.nix.
       services.oo7.enable = true;
+
+      # oo7 0.7.0.beta (pkgs/oo7-beta.nix) fixes the 0.6 daemon's startup
+      # deadlock. Its unit still sets NoNewPrivileges=true, which blocks the
+      # NixOS cap_ipc_lock wrapper so secrets can't be mlocked — clear it.
+      systemd.user.services.oo7-daemon.serviceConfig.NoNewPrivileges = lib.mkForce false;
+
       security.polkit.enable = true;
       programs.dconf.enable = true; # gsettings persistence (Noctalia color-scheme sync)
 

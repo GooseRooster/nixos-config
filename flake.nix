@@ -89,6 +89,10 @@
     inputs@{ self, nixpkgs, ... }:
     let
       inherit (nixpkgs) lib;
+
+      # oo7 0.6.0 (nixpkgs) has a ~50% startup deadlock in its daemon;
+      # override the oo7 package set with 0.7.0.beta. See pkgs/oo7-beta.nix.
+      oo7Overlay = import ./pkgs/oo7-beta.nix;
     in
     {
 
@@ -97,6 +101,7 @@
         specialArgs = { inherit inputs; };
         modules = [
           ./hosts/home
+          { nixpkgs.overlays = [ oo7Overlay ]; }
         ];
       };
 
@@ -105,6 +110,7 @@
         specialArgs = { inherit inputs; };
         modules = [
           ./hosts/laptop
+          { nixpkgs.overlays = [ oo7Overlay ]; }
         ];
       };
     };
