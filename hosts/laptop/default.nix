@@ -11,18 +11,8 @@
     ./hardware-configuration.nix
     ../../modules/base.nix
     ../../modules/desktop/default.nix
-    ../../modules/desktop/gnome.nix
-    ../../modules/desktop/gnome-devtools.nix
-    ../../modules/desktop/gnome-settings.nix
-    ../../modules/desktop/gnome-dconf.nix
-    ../../modules/desktop/gnome-extensions.nix
-    ../../modules/desktop/gnome-keybindings.nix
-    ../../modules/desktop/gnome-paperwm.nix
-    ../../modules/desktop/gnome-nowplaying.nix
-    ../../modules/desktop/gnome-weatherornot.nix
-    ../../modules/desktop/gnome-clipboard-indicator.nix
-    ../../modules/desktop/gnome-search-providers.nix
-    ../../modules/desktop/gnome-vshell.nix
+    ../../modules/desktop/noctalia.nix
+    ../../modules/desktop/sway.nix
     ../../modules/core/podman.nix
     ../../modules/flatpak/base.nix
     ../../modules/flatpak/gaming.nix
@@ -37,13 +27,14 @@
   ];
 
   networking.hostName = "nixos";
-  
+
   hardware.cpu.intel.updateMicrocode = true;
 
   # The graphical installer created an encrypted swap partition (separate from
   # the root LUKS container). Its unlock entry is written to the installer's
   # configuration.nix (not hardware-configuration.nix), so carry it over here.
-  boot.initrd.luks.devices."luks-dffd0ff3-06ef-4b5e-866f-1c12388a477c".device = "/dev/disk/by-uuid/dffd0ff3-06ef-4b5e-866f-1c12388a477c";
+  boot.initrd.luks.devices."luks-dffd0ff3-06ef-4b5e-866f-1c12388a477c".device =
+    "/dev/disk/by-uuid/dffd0ff3-06ef-4b5e-866f-1c12388a477c";
 
   # ntsync
   # Load the ntsync kernel module at boot
@@ -70,7 +61,7 @@
     backupFileExtension = "hm-backup";
 
     users.gooze =
-      { lib, pkgs, ... }:
+      { osConfig, lib, pkgs, ... }:
       let
         # Mini EQ autostart is a startup race: the Background portal
         # (xdg-desktop-portal-gnome) drops
@@ -100,6 +91,7 @@
       {
         imports = [
           inputs.dotfiles.hmModules.default
+          inputs.noctalia.homeModules.default
           inputs.zen-browser.homeModules.twilight
         ];
 
@@ -127,6 +119,55 @@
         home.modules.theming.enable = true;
         # Rootless podman socket + docker->podman alias (lazydocker/lazypodman).
         home.modules.podmanAlias.enable = true;
+
+        # Mirror the NixOS session choice into the dotfiles flags so
+        # session-gated HM content (tinty -> gnome-only, ghostty theme, gtk
+        # theme-name, Noctalia palettes) follows modules.desktop.session.
+        home.modules.session = osConfig.modules.desktop.session;
+
+        # Noctalia v5 + Sway baseline settings. Only materialised when the
+        # noctalia session stack is active, so no config files are generated
+        # for stacks that aren't running. The internal panel is left to Sway's
+        # auto-detected output config (no per-host output block).
+        programs.noctalia = lib.mkIf (osConfig.modules.desktop.session == "noctalia") {
+          # The shell itself is autostarted by Sway (`exec noctalia`); enable
+          # here just installs the config file.
+          enable = true;
+          settings = {
+            shell = {
+              # Noctalia's native polkit agent (security.polkit is enabled by
+              # the noctalia NixOS module).
+              polkit_agent = true;
+
+              # Screenshot output policy for screenshot-region/-fullscreen IPC
+              # (bound to Sway keybinds in the dotfiles sway module).
+              screenshot = {
+                directory = "~/Pictures/Screenshots";
+                save_to_file = true;
+                copy_to_clipboard = true;
+              };
+            };
+
+            # Lockscreen/notification daemons are built into Noctalia.
+            lockscreen.enabled = true;
+
+            # App theming via Noctalia's builtin templates: the rendered
+            # palettes land in writable files (~/.config/ghostty/themes/noctalia,
+            # ~/.config/sway/noctalia, ~/.config/gtk-{3,4}.0/noctalia.css). The
+            # template post-hooks would also edit ghostty's config / Sway's
+            # config, which are read-only HM symlinks — pre-seeded in the
+            # dotfiles so those edits become no-ops.
+            theme.templates = {
+              enable_builtin_templates = true;
+              builtin_ids = [
+                "ghostty"
+                "gtk3"
+                "gtk4"
+                "sway"
+              ];
+            };
+          };
+        };
 
         # nvim/yazi ship `Terminal=true` desktop entries (Exec=nvim/yazi). Override
         # them here (these land in ~/.local/share/applications, above the system
@@ -189,8 +230,10 @@
   # plus a flatpak-accessible copy in ~/.local/bin.
   modules.gamePerformance.enable = true;
 
-  # GNOME (GDM + GNOME Shell) with tinty + gnomad owning theming
-  # (modules/extras/theming.nix).
+  # Lightweight DE: ly (DM) + Sway (compositor) + Noctalia v5 (shell).
+  # modules.desktop.session is set by noctalia.nix (mkDefault); to return to
+  # GNOME, swap the noctalia.nix/sway.nix imports for the gnome-* modules
+  # (kept as dormant code — no host uses them by default).
 
   # Native Steam (Millennium-flavoured) instead of the Flatpak Steam.
   modules.steam.enable = true;

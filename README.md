@@ -1,11 +1,10 @@
 # nixos-config
 
-Flake-based NixOS configuration for a Flatpak-first, bluefin-like GNOME desktop:
+Flake-based NixOS configuration for a Flatpak-first, bluefin-like Noctalia desktop:
 
-- **Desktop**: minimal [GNOME](https://www.gnome.org) (GDM, Wayland-only).
-- **Theming**: tinty + gnomad (schemes/colour-scheme) + gowall, see `modules/extras/theming.nix`.
+- **Desktop**: [Noctalia v5](https://noctalia.dev/) + [Sway](https://swaywm.org) (Wayland compositor) with **ly** as the display manager — the lightweight DE stack (`modules/desktop/noctalia.nix` + `modules/desktop/sway.nix`). A GNOME stack (`gnome*.nix` modules) is kept as dormant code for an easy switch-back, but no host imports it.
+- **Theming**: Noctalia's builtin templates own app theming (ghostty, sway, GTK palette); gowall for wallpaper recoloring, see `modules/extras/theming.nix`. tinty + gnomad are gnome-session-only and dormant alongside the GNOME stack.
 - **Apps**: declarative Flatpaks (see `modules/flatpak/`), GNOME core apps disabled; Some apps (Browsers, steam) are native due to various reasons (browser sandboxes behave better native, gaming packages sometimes perform better native. Steam needs native for Millenium if theming is enabled)
-- **Shell extensions**: (GNOME) declaratively installed via `pkgs.gnomeExtensions`
 - **Kernel**: nixpkgs kernel by default (`linuxPackages_latest`),
   with a per-host `latest` | `lts` fallback
 - **Hardening**: moderate kernel/sudo/ssh hardening (`modules/core/hardening.nix`)
@@ -20,11 +19,8 @@ CLI/dev applications are considered a per user concern (unless necessary for the
 - `modules/core/` — cross-host system modules (`system`, `kernel`, `perf`,
   `nix`, `users`, `hardening`, `maintenance`, `podman`, `secure-boot`)
 - `modules/desktop/` — shared desktop plumbing (`modules/desktop/default.nix`)
-  plus the GNOME stack modules: `gnome.nix`, `gnome-settings.nix`,
-  `gnome-devtools.nix`, `gnome-extensions.nix`, and per-extension dconf defaults
-  (`gnome-paperwm.nix`, `gnome-nowplaying.nix`, `gnome-weatherornot.nix`,
-  `gnome-clipboard-indicator.nix`, `gnome-search-providers.nix`,
-  `gnome-vshell.nix`)
+  plus the session stack modules: `noctalia.nix` + `sway.nix` (active) and the
+  `gnome*.nix` modules (dormant — kept for switch-backs)
 - `modules/flatpak/` — declarative flatpaks, split into toggle-able sets
 - `modules/extras/` — optional host extras (theming)
 - `quadlets/` — example podman quadlet files (system + rootless user templates)
@@ -34,17 +30,16 @@ CLI/dev applications are considered a per user concern (unless necessary for the
 
 - `modules/base.nix` — core modules + perf/hardening/maintenance defaults,
   imported by every host.
-- `modules/desktop/default.nix` — desktop plumbing shared by every host
-  (audio, portals, keyring, power, ...).
-- GNOME stack: a host imports `modules/desktop/gnome.nix` plus
-  `gnome-settings.nix`, `gnome-devtools.nix`, `gnome-extensions.nix` and the
-  per-extension settings modules (`gnome-paperwm.nix`, `gnome-nowplaying.nix`,
-  `gnome-weatherornot.nix`, `gnome-clipboard-indicator.nix`,
-  `gnome-search-providers.nix`, `gnome-vshell.nix`).
+- `modules/desktop/default.nix` — desktop plumbing shared by every session
+  stack (audio, portals, keyring, power, ...).
+- Session stack: a host imports exactly one of `modules/desktop/noctalia.nix`
+  + `modules/desktop/sway.nix` or `modules/desktop/gnome.nix` (+ its
+  `gnome-*.nix` companions, ...). Each stack sets `modules.desktop.session`
+  via `mkDefault`, which gates its own config and mirrors into Home Manager.
 
-Every host imports base + desktop + the `gnome-*.nix` modules. Per-host extras
-(flatpak sets, gaming, theming, secure-boot, ...) are imported and enabled
-directly in the host file.
+So `hosts/home` imports base + desktop + `noctalia.nix` + `sway.nix`. Per-host
+extras (flatpak sets, gaming, theming, secure-boot, ...) are imported and
+enabled directly in the host file.
 
 ## Kernel selection
 
@@ -101,15 +96,47 @@ Declarative installs are handled by [nix-flatpak](https://github.com/gmodena/nix
 are installed from Flathub by default.
 
 
-## GNOME Shell extensions
+## GNOME Shell extensions (dormant)
 
-Extensions are installed declaratively in `modules/desktop/gnome-extensions.nix`
-via `pkgs.gnomeExtensions`.
+The GNOME stack's extensions live in `modules/desktop/gnome-extensions.nix`
+(via `pkgs.gnomeExtensions`, some as custom flakes). While every host runs the
+noctalia session these modules are unused, but stay ready for switch-backs.
 
 Some extensions are pulled in as custom flakes if they are not available on EGO.
 
 Per-extension settings are declared as dconf *defaults* (soft defaults, still
 overridable in the UI) in the matching `modules/desktop/gnome-*.nix` module.
+
+
+## Switching session stack
+
+`modules/desktop/session.nix` exposes `modules.desktop.session`
+(`"noctalia"` | `"gnome"`). The active stack is selected by which stack module
+the host imports; to move a host between stacks, swap its stack-module imports:
+
+```nix
+# hosts/<name>/default.nix — noctalia + Sway (current default):
+../../modules/desktop/noctalia.nix
+../../modules/desktop/sway.nix
+# ... or, to return to GNOME:
+../../modules/desktop/gnome.nix
+../../modules/desktop/gnome-devtools.nix
+../../modules/desktop/gnome-settings.nix
+../../modules/desktop/gnome-dconf.nix
+../../modules/desktop/gnome-extensions.nix
+../../modules/desktop/gnome-keybindings.nix
+../../modules/desktop/gnome-paperwm.nix
+```
+
+The option mirrors into Home Manager (`home.modules.session`), so
+session-gated dotfile content (ghostty theme, gtk theme-name, tinty/gnomad
+files, Noctalia palettes) follows automatically. The dormant `gnome*.nix`
+modules and the `pkgs/gnome-extensions` packages are kept for that purpose.
+
+Sway's keybinds/autostart/output live in the dotfiles repo
+(`modules/sway.nix`, gated on the mirrored session flag); the NixOS-side
+`modules/desktop/sway.nix` only handles the package, portals and session env
+(including the Vulkan renderer used for HDR).
 
 
 ## Apply
@@ -308,8 +335,9 @@ sudo passwd gooze
 
 ## Adding a host (e.g. WSL)
 
-Create `hosts/<name>/default.nix` importing `modules/base.nix` plus the
-GNOME desktop modules it needs (desktop + `gnome*.nix`), set
+Create `hosts/<name>/default.nix` importing `modules/base.nix`, the desktop
+plumbing (`modules/desktop/default.nix`) plus the session stack module(s) it
+needs (`noctalia.nix` + `sway.nix`, or the `gnome*.nix` modules), set
 `modules.users.primary`, and add a matching `nixosConfigurations.<name>` in
 
 `flake.nix`.

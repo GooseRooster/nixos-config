@@ -1,5 +1,5 @@
 {
-  description = "NixOS — Flatpak-first GNOME desktop + CLI batteries";
+  description = "NixOS — Flatpak-first noctalia desktop + CLI batteries";
 
   inputs = {
     nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
@@ -38,6 +38,14 @@
     gnomad.url = "github:GooseRooster/gnomad";
     gnomad.inputs.nixpkgs.follows = "nixpkgs";
 
+    # Noctalia v5 (C++ desktop shell) for the lightweight DE stack
+    # (modules/desktop/noctalia.nix). Pairs with Sway (modules/desktop/sway.nix)
+    # as the compositor. Requires nixpkgs unstable.
+    noctalia = {
+      url = "github:noctalia-dev/noctalia";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
     # Home Manager (the tool) + our dotfiles repo (the config + CLI bundles).
     home-manager.url = "github:nix-community/home-manager";
     home-manager.inputs.nixpkgs.follows = "nixpkgs";
@@ -67,6 +75,14 @@
     # Secure Boot (UKI signing via sbctl). Safe to follow our nixpkgs.
     lanzaboote.url = "github:nix-community/lanzaboote/v1.1.0";
     lanzaboote.inputs.nixpkgs.follows = "nixpkgs";
+  };
+
+  # Binary cache for Noctalia (skip building the v5 C++ shell locally).
+  nixConfig = {
+    extra-substituters = [ "https://noctalia.cachix.org" ];
+    extra-trusted-public-keys = [
+      "noctalia.cachix.org-1:pCOR47nnMEo5thcxNDtzWpOxNFQsBRglJzxWPp3dkU4="
+    ];
   };
 
   outputs =
