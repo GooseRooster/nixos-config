@@ -95,6 +95,13 @@
           inputs.zen-browser.homeModules.twilight
         ];
 
+        # HM core now ships its own programs.noctalia module (as the directory
+        # modules/programs/noctalia/), whose options collide with the noctalia
+        # flake's home module imported above. Disable HM's copy; the noctalia
+        # flake's own `disabledModules = [ "programs/noctalia.nix" ]` misses it
+        # because HM moved it from that file to a directory.
+        disabledModules = [ "programs/noctalia" ];
+
         # Zen Browser, native (browser sandboxes behave better native than
         # flatpak). Default browser; Firefox stays installed as the backup.
         # Launch as `zen-twilight`.
