@@ -17,6 +17,7 @@
     ./core/maintenance.nix
     ./core/gnupg.nix
     ./core/auto-upgrade.nix
+    ./core/oo7-watch.nix
   ];
 
   modules.perf.enable = true;
