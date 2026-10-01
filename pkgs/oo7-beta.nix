@@ -85,5 +85,17 @@ in
       prev.systemdLibs
       prev.pam
     ];
+
+    # The pam module bakes OO7_DAEMON_LOGIN_PATH =
+    # $prefix/libexec/oo7-daemon-login at build time (see pam/src/meson.build).
+    # Upstream installs pam and server under one prefix, but Nix builds them as
+    # separate derivations and only the server ships oo7-daemon-login. Without
+    # this link pam_oo7 fork/execs a nonexistent path and silently drops the
+    # login password whenever oo7-daemon isn't already up (its socket missing),
+    # leaving the keyring locked and forcing a gcr prompt on every login.
+    postFixup = ''
+      mkdir -p "$out/libexec"
+      ln -s ${final.oo7-server}/libexec/oo7-daemon-login "$out/libexec/oo7-daemon-login"
+    '';
   };
 }
