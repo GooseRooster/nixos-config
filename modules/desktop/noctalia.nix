@@ -38,9 +38,10 @@ in
       };
 
       # ly (display manager). ly's PAM service substacks `login`, so
-      # security.pam.services.login.oo7.enable (set by services.oo7 below)
-      # unlocks the oo7 keyring at ly login exactly like GDM does. Sway's
-      # session .desktop is discovered from the session packages Sway installs.
+      # security.pam.services.login.enableGnomeKeyring (set by
+      # services.gnome.gnome-keyring below) unlocks the login keyring at ly
+      # login exactly like GDM does. Sway's session .desktop is discovered from
+      # the session packages Sway installs.
       services.displayManager.ly = {
         enable = true;
         settings = {
@@ -67,18 +68,11 @@ in
       # core-os-services: keyring daemon, gcr SSH agent and polkit. Noctalia v5
       # registers its own polkit agent (shell.polkit_agent in the HM settings).
       #
-      # Secret Service: oo7, the gnome-keyring replacement GNOME moved to in 51.
-      # services.oo7 installs oo7-daemon + the PAM login auto-unlock hook
-      # (pam_oo7) + oo7-portal, and auto-migrates an existing gnome-keyring.
-      # gnome-keyring stays disabled so the two don't compete for
-      # org.freedesktop.secrets. The SSH agent (gcr-ssh-agent) is separate and
-      # lives in keyring.nix.
-      services.oo7.enable = true;
-
-      # oo7 0.7.0.beta (pkgs/oo7-beta.nix) fixes the 0.6 daemon's startup
-      # deadlock. Its unit still sets NoNewPrivileges=true, which blocks the
-      # NixOS cap_ipc_lock wrapper so secrets can't be mlocked — clear it.
-      systemd.user.services.oo7-daemon.serviceConfig.NoNewPrivileges = lib.mkForce false;
+      # Secret Service: gnome-keyring. The nixpkgs module installs the daemon,
+      # the gcr prompter and the Secret portal, and wires PAM login auto-unlock
+      # (security.pam.services.login.enableGnomeKeyring). The SSH agent
+      # (gcr-ssh-agent) is separate and lives in keyring.nix.
+      services.gnome.gnome-keyring.enable = true;
 
       security.polkit.enable = true;
       programs.dconf.enable = true; # gsettings persistence (Noctalia color-scheme sync)

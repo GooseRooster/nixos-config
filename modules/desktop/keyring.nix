@@ -5,8 +5,7 @@
   # SSH_AUTH_SOCK in the systemd user environment — which a bare Sway session
   # never imports, so modules/desktop/sway.nix exports it explicitly.
   #
-  # The Secret Service itself is stack-specific and enabled by the stack
-  # module: gnome-keyring (GNOME stack) or oo7 (noctalia stack). Each wires its
-  # own PAM login auto-unlock hook.
+  # The Secret Service itself (gnome-keyring) is enabled by the session stack
+  # module, which wires its own PAM login auto-unlock hook.
   services.gnome.gcr-ssh-agent.enable = true;
 }

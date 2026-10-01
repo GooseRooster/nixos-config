@@ -59,7 +59,7 @@ in
     # Portals. nixpkgs' Sway module already maps Screenshot/ScreenCast to the
     # wlr backend and everything else to gtk; the gnome portal fills the gaps
     # gtk leaves (Background for flatpak autostart/background, GlobalShortcuts)
-    # and oo7-portal supplies Secret (its .portal is UseIn=gnome, so an
+    # and gnome-keyring supplies Secret (its .portal is UseIn=gnome, so an
     # explicit mapping is needed here) so credential-storing flatpaks work.
     xdg.portal.extraPortals = [
       pkgs.xdg-desktop-portal-gtk
@@ -70,7 +70,7 @@ in
     xdg.portal.config.sway = {
       "org.freedesktop.impl.portal.Background" = [ "gnome" ];
       "org.freedesktop.impl.portal.GlobalShortcuts" = [ "gnome" ];
-      "org.freedesktop.impl.portal.Secret" = [ "oo7-portal" ];
+      "org.freedesktop.impl.portal.Secret" = [ "gnome-keyring" ];
     };
 
     # Sway has no session manager, so nothing starts the XDG autostart units
