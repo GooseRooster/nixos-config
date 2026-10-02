@@ -1,4 +1,9 @@
-{ config, lib, pkgs, ... }:
+{
+  config,
+  lib,
+  pkgs,
+  ...
+}:
 
 let
   # Launch a terminal app in Ghostty with zsh's environment bootstrapped.
@@ -18,10 +23,11 @@ let
 in
 {
   environment.systemPackages = with pkgs; [
-    ghostty        # terminal emulator
-    wl-clipboard   # wl-copy / wl-paste
-    brightnessctl  # backlight control
-    termapp        # launch a terminal app in ghostty with zsh env bootstrapped
+    ghostty # terminal emulator
+    foot # terminal emulator
+    wl-clipboard # wl-copy / wl-paste
+    brightnessctl # backlight control
+    termapp # launch a terminal app in ghostty with zsh env bootstrapped
   ];
 
   # Make Ghostty the default terminal. GNOME 50's GLib no longer reads
