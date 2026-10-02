@@ -24,6 +24,17 @@ let
     ];
     text = builtins.readFile ./gowall_convert_wallpapers;
   };
+
+  # Batch refresh hook for "palette changed": reruns everything that caches
+  # the palette. Edit ./theme_regen to add/remove steps.
+  themeRegen = pkgs.writeShellApplication {
+    name = "theme_regen";
+    runtimeInputs = [
+      pkgs.sway
+      gowallConvertWallpapers
+    ];
+    text = builtins.readFile ./theme_regen;
+  };
 in
 {
   options.modules.theming.enable =
@@ -33,6 +44,7 @@ in
     environment.systemPackages = [
       pkgs.gowall
       gowallConvertWallpapers
+      themeRegen
     ];
   };
 }
