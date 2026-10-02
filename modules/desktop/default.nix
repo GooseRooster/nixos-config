@@ -1,11 +1,10 @@
 { lib, ... }:
 
-# Desktop plumbing shared by every session stack (GNOME and noctalia alike).
-# A host imports this plus exactly one session stack module
-# (noctalia.nix + sway.nix / gnome.nix) to get a complete desktop.
+# Desktop plumbing shared by the noctalia session stack. A host imports this
+# plus the session stack modules (noctalia.nix + sway.nix) to get a complete
+# desktop.
 {
   imports = [
-    ./session.nix
     ./apps.nix
     ./terminal.nix
     ./graphics.nix

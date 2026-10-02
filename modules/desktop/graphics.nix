@@ -10,8 +10,8 @@ in
   };
 
   config = lib.mkIf cfg.enable {
-    # GNOME does NOT enable this by itself; without it there is no hardware
-    # GL/Vulkan, no /run/opengl-driver, and flatpak GPU apps can't accel.
+    # Without this there is no hardware GL/Vulkan, no /run/opengl-driver, and
+    # flatpak GPU apps can't accel.
     hardware.graphics.enable = true;
 
     # 32-bit drivers for Steam/Wine/older games (x86_64 only).

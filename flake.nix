@@ -7,36 +7,12 @@
     # Declarative flatpak installs (nixpkgs removed services.flatpak.packages).
     nix-flatpak.url = "github:gmodena/nix-flatpak/?ref=latest";
 
-    # GNOME Shell extensions built from source (not in nixpkgs/EGO). Pinned as
-    # flake inputs (flake = false) so `nix flake update` keeps them current
-    # with no manual rev/hash management.
-    gradia-capture = {
-      url = "github:AlexanderVanhee/gradia-capture";
-      flake = false;
-    };
-    bazaar-companion = {
-      url = "github:bazaar-org/bazaar-companion";
-      flake = false;
-    };
-    paperwm = {
-      url = "github:paperwm/PaperWM/develop";
-      flake = false;
-    };
-    nowplaying-card = {
-      url = "github:epogonii/nowplaying-card";
-      flake = false;
-    };
-
-    # Hatter icon theme (not in nixpkgs). Pinned the same way as the
-    # extensions above; packaged in pkgs/hatter.
+    # Hatter icon theme (not in nixpkgs). Pinned as a flake input
+    # (flake = false); packaged in pkgs/hatter.
     hatter = {
       url = "github:Mibea/Hatter";
       flake = false;
     };
-
-    # GNOME colour-scheme TUI (theming). Safe to follow our nixpkgs.
-    gnomad.url = "github:GooseRooster/gnomad";
-    gnomad.inputs.nixpkgs.follows = "nixpkgs";
 
     # Noctalia v5 (C++ desktop shell) for the lightweight DE stack
     # (modules/desktop/noctalia.nix). Pairs with Sway (modules/desktop/sway.nix)
@@ -55,7 +31,7 @@
     dotfiles.inputs.nixpkgs.follows = "nixpkgs";
 
     # Steam skin that makes the client look native (replaces Millennium, see
-    # modules/gaming/steam.nix). Pinned as flake = false like the extensions:
+    # modules/gaming/steam.nix). Pinned as flake = false:
     # install.py runs from this source tree at activation/refresh time.
     adwaita-for-steam = {
       url = "github:tkashkin/Adwaita-for-Steam";

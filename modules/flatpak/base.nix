@@ -26,7 +26,6 @@
     "me.iepure.devtoolbox"
     "org.gimp.GIMP"
     "org.gnome.Boxes"
-    "org.gnome.Builder"
     "org.gnome.Calculator"
     "org.gnome.Calendar"
     "org.gnome.Characters"

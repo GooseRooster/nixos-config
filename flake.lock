@@ -16,22 +16,6 @@
         "type": "github"
       }
     },
-    "bazaar-companion": {
-      "flake": false,
-      "locked": {
-        "lastModified": 1775232821,
-        "narHash": "sha256-Z2WQ6uQqlU2z9DLtZ8s258A8+bASk7453yuwOK9OrII=",
-        "owner": "bazaar-org",
-        "repo": "bazaar-companion",
-        "rev": "3bb9134985343ffd1993520eb37c90e113bfb09b",
-        "type": "github"
-      },
-      "original": {
-        "owner": "bazaar-org",
-        "repo": "bazaar-companion",
-        "type": "github"
-      }
-    },
     "crane": {
       "locked": {
         "lastModified": 1781825982,
@@ -57,11 +41,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1790927468,
-        "narHash": "sha256-UxmN9Mcb/Jy8tl0tJJgALO9Rh401hpoN4DLiubZDalQ=",
+        "lastModified": 1790968944,
+        "narHash": "sha256-6aMOKIZm4M9XQfVh2TjeHn7zdxu7jbvUyKZ1bzAWNCg=",
         "owner": "GooseRooster",
         "repo": "home-manager",
-        "rev": "7a3e240a678d24cd024b1f5f05c2f8c666226920",
+        "rev": "c86c580e7134f15c68a5404766b06ffaf570dfaf",
         "type": "github"
       },
       "original": {
@@ -105,42 +89,6 @@
       "original": {
         "owner": "hercules-ci",
         "repo": "gitignore.nix",
-        "type": "github"
-      }
-    },
-    "gnomad": {
-      "inputs": {
-        "nixpkgs": [
-          "nixpkgs"
-        ]
-      },
-      "locked": {
-        "lastModified": 1790509137,
-        "narHash": "sha256-jAEe+bcaSsbNpQdzOstBkjcvuEZ4A0zMrsFViMOxYhg=",
-        "owner": "GooseRooster",
-        "repo": "gnomad",
-        "rev": "45ea34b626ed862a6857da68fb7421c003e94f58",
-        "type": "github"
-      },
-      "original": {
-        "owner": "GooseRooster",
-        "repo": "gnomad",
-        "type": "github"
-      }
-    },
-    "gradia-capture": {
-      "flake": false,
-      "locked": {
-        "lastModified": 1787405741,
-        "narHash": "sha256-XruZoUTbDT/qOPmFj5/CyvQfhH6Tg0IqJ4JPVMiu5zQ=",
-        "owner": "AlexanderVanhee",
-        "repo": "gradia-capture",
-        "rev": "f70a2127d0a9acc3c9d4d8198361fc9f4e14818f",
-        "type": "github"
-      },
-      "original": {
-        "owner": "AlexanderVanhee",
-        "repo": "gradia-capture",
         "type": "github"
       }
     },
@@ -256,39 +204,6 @@
         "type": "github"
       }
     },
-    "nowplaying-card": {
-      "flake": false,
-      "locked": {
-        "lastModified": 1790947666,
-        "narHash": "sha256-+gOx2AxDoCO7q1oqTar5Nvxtm1nO5fQcdbBkkmaPMRU=",
-        "owner": "epogonii",
-        "repo": "nowplaying-card",
-        "rev": "418398ee6f2a1c65403b593570bb9e8b7342ef6f",
-        "type": "github"
-      },
-      "original": {
-        "owner": "epogonii",
-        "repo": "nowplaying-card",
-        "type": "github"
-      }
-    },
-    "paperwm": {
-      "flake": false,
-      "locked": {
-        "lastModified": 1789969259,
-        "narHash": "sha256-UkyGrezAt9GFoMLW6T3uZIrF+KzelBDKxSCyGP87wjc=",
-        "owner": "paperwm",
-        "repo": "PaperWM",
-        "rev": "01c5950cbb8847e32f614eded26b3cb38f25e919",
-        "type": "github"
-      },
-      "original": {
-        "owner": "paperwm",
-        "ref": "develop",
-        "repo": "PaperWM",
-        "type": "github"
-      }
-    },
     "pre-commit": {
       "inputs": {
         "flake-compat": "flake-compat",
@@ -315,18 +230,13 @@
     "root": {
       "inputs": {
         "adwaita-for-steam": "adwaita-for-steam",
-        "bazaar-companion": "bazaar-companion",
         "dotfiles": "dotfiles",
-        "gnomad": "gnomad",
-        "gradia-capture": "gradia-capture",
         "hatter": "hatter",
         "home-manager": "home-manager",
         "lanzaboote": "lanzaboote",
         "nix-flatpak": "nix-flatpak",
         "nixpkgs": "nixpkgs",
         "noctalia": "noctalia",
-        "nowplaying-card": "nowplaying-card",
-        "paperwm": "paperwm",
         "zen-browser": "zen-browser"
       }
     },

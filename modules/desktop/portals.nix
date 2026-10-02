@@ -1,8 +1,8 @@
 { config, pkgs, lib, ... }:
 
 {
-  # GNOME's core-os-services already enables xdg.portal and installs
-  # xdg-desktop-portal-gnome + xdg-desktop-portal-gtk plus the portal config.
-  # This just makes the portal service explicit.
+  # nixpkgs' Sway module wires up xdg.portal and the wlr/gtk backends; the
+  # noctalia and sway modules add the extra portal backends they need. This
+  # just makes the portal service explicit.
   xdg.portal.enable = true;
 }

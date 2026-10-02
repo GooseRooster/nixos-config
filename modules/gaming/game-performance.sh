@@ -12,8 +12,6 @@
 # ON during a game when the user had it off. Caffeine is enabled/disabled
 # unconditionally: there is no persisted state or status command, and the
 # toggle variant would switch an already-enabled caffeine OFF mid-game.
-# Without Noctalia (GNOME session / bare terminal) the gsettings Night Light
-# path is used as before; caffeine is skipped there.
 #
 # Generated as a NixOS module (modules/gaming/game-performance.nix), which
 # substitutes the @...@ placeholders with absolute store paths and the TuneD
@@ -33,7 +31,6 @@
 set -uo pipefail
 
 TUNED_ADM="@tunedAdm@"
-GSETTINGS="@gsettings@"
 NOTIFY_SEND="@notifySend@"
 NOCTALIA="@noctalia@"
 PERF_PROFILE="@perfProfile@"
@@ -60,8 +57,8 @@ fi
 # consequences: /tmp writes vanish with the container, and /etc/tuned is
 # missing, so tuned-adm dies with "Global TuneD configuration file
 # '/etc/tuned/tuned-main.conf' not found" before it ever reaches the daemon.
-# Everything that matters via the SESSION bus (noctalia IPC, notifications,
-# dconf) works in-container, but TuneD is driven over the SYSTEM bus and
+# Everything that matters via the SESSION bus (noctalia IPC, notifications)
+# works in-container, but TuneD is driven over the SYSTEM bus and
 # needs host /etc — so when this script runs in a container, relay tuned-adm
 # through the user's systemd manager (systemd-run --user), which executes it
 # on the real host. Outside containers /etc/tuned exists and we call it
@@ -98,12 +95,6 @@ fi
 
 prev_profile="${active_line#Current active profile: }"
 
-# --- Night Light state -------------------------------------------------
-NIGHT_LIGHT_SCHEMA="org.gnome.settings-daemon.plugins.color"
-NIGHT_LIGHT_KEY="night-light-enabled"
-
-night_light_prev="$(host "$GSETTINGS" get "$NIGHT_LIGHT_SCHEMA" "$NIGHT_LIGHT_KEY" 2>/dev/null)"
-
 # The [nightlight] enabled value from Noctalia's persisted config:
 # settings.toml (IPC/GUI toggles land there) wins over config.toml; "true"
 # when nothing says otherwise, so a game never runs with the tint on by
@@ -135,8 +126,6 @@ restore_profile() {
       host "$NOCTALIA" msg nightlight-enable 2>/dev/null
     fi
     host "$NOCTALIA" msg caffeine-disable 2>/dev/null
-  elif [[ -n "$night_light_prev" ]]; then
-    host "$GSETTINGS" set "$NIGHT_LIGHT_SCHEMA" "$NIGHT_LIGHT_KEY" "$night_light_prev" 2>/dev/null
   fi
 }
 
@@ -157,8 +146,6 @@ if [[ "$noctalia" == true ]]; then
     fi
   fi
   host "$NOCTALIA" msg caffeine-enable 2>/dev/null
-elif [[ "$night_light_prev" == "true" ]]; then
-  host "$GSETTINGS" set "$NIGHT_LIGHT_SCHEMA" "$NIGHT_LIGHT_KEY" false 2>/dev/null
 fi
 
 "$@"

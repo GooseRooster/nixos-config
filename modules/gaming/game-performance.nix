@@ -15,10 +15,9 @@ let
 
   script = pkgs.writeScriptBin "game-performance"
     (builtins.replaceStrings
-      [ "@tunedAdm@" "@gsettings@" "@notifySend@" "@noctalia@" "@perfProfile@" ]
+      [ "@tunedAdm@" "@notifySend@" "@noctalia@" "@perfProfile@" ]
       [
         "${pkgs.tuned}/bin/tuned-adm"
-        "${pkgs.glib}/bin/gsettings"
         "${pkgs.libnotify}/bin/notify-send"
         noctaliaBin
         cfg.perfProfile

@@ -122,21 +122,15 @@
 
         # Feature flags for the dotfiles modules
         home.bundles.baseExtra.enable = true; # desktop extras (fonts, vscode, …)
+        home.modules.desktop.enable = true; # Sway/Noctalia session configs
         home.modules.gaming.enable = true;
         home.modules.theming.enable = true;
         # Rootless podman socket + docker->podman alias (lazydocker/lazypodman).
         home.modules.podmanAlias.enable = true;
 
-        # Mirror the NixOS session choice into the dotfiles flags so
-        # session-gated HM content (tinty -> gnome-only, ghostty theme, gtk
-        # theme-name, Noctalia palettes) follows modules.desktop.session.
-        home.modules.session = osConfig.modules.desktop.session;
-
-        # Noctalia v5 + Sway baseline settings. Only materialised when the
-        # noctalia session stack is active, so no config files are generated
-        # for stacks that aren't running. The internal panel is left to Sway's
-        # auto-detected output config (no per-host output block).
-        programs.noctalia = lib.mkIf (osConfig.modules.desktop.session == "noctalia") {
+        # Noctalia v5 + Sway baseline settings. The internal panel is left to
+        # Sway's auto-detected output config (no per-host output block).
+        programs.noctalia = {
           # The shell itself is autostarted by Sway (`exec noctalia`); enable
           # here just installs the config file.
           enable = true;
@@ -159,15 +153,15 @@
             lockscreen.enabled = true;
 
             # App theming via Noctalia's builtin templates: the rendered
-            # palettes land in writable files (~/.config/ghostty/themes/noctalia,
+            # palettes land in writable files (~/.config/foot/themes/noctalia,
             # ~/.config/sway/noctalia, ~/.config/gtk-{3,4}.0/noctalia.css). The
-            # template post-hooks would also edit ghostty's config / Sway's
+            # template post-hooks would also edit foot's config / Sway's
             # config, which are read-only HM symlinks — pre-seeded in the
             # dotfiles so those edits become no-ops.
             theme.templates = {
               enable_builtin_templates = true;
               builtin_ids = [
-                "ghostty"
+                "foot"
                 "gtk3"
                 "gtk4"
                 "sway"
@@ -238,9 +232,6 @@
   modules.gamePerformance.enable = true;
 
   # Lightweight DE: ly (DM) + Sway (compositor) + Noctalia v5 (shell).
-  # modules.desktop.session is set by noctalia.nix (mkDefault); to return to
-  # GNOME, swap the noctalia.nix/sway.nix imports for the gnome-* modules
-  # (kept as dormant code — no host uses them by default).
 
   # Native Steam (Millennium-flavoured) instead of the Flatpak Steam.
   modules.steam.enable = true;
