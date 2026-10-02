@@ -1,5 +1,6 @@
 /*
- * Adwaita-for-Steam color overrides, rendered by Noctalia's template engine.
+ * Adwaita-for-Steam color + font overrides, rendered by Noctalia's template
+ * engine.
  *
  * Source of truth for ~/.config/AdwSteamGtk/custom.css: do not edit the
  * generated file by hand. Wired up in modules/desktop/noctalia-steam-theme.nix;
@@ -17,6 +18,14 @@
  */
 
 :root {
+	/* Font: follow the session UI font (defined in the dotfiles repo's
+	 * modules/gtk.nix). Overrides --adw-text-font-primary and
+	 * --adw-text-font-monospace-primary from adwaita/css/_root/text.css;
+	 * custom.css is imported last, so these win. --adw-text-font and
+	 * --adw-text-font-monospace derive from them at use-time. */
+	--adw-text-font-primary: "Iosevka Nerd Font Mono", system-ui, sans-serif !important;
+	--adw-text-font-monospace-primary: "Iosevka Nerd Font Mono", ui-monospace, monospace !important;
+
 	/* Accent */
 	--adw-accent-bg-light: {{ colors.primary.light.hex }} !important;
 	--adw-accent-bg-dark: {{ colors.primary.dark.hex }} !important;
