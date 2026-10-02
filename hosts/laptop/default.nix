@@ -93,6 +93,7 @@
           inputs.dotfiles.hmModules.default
           inputs.noctalia.homeModules.default
           inputs.zen-browser.homeModules.twilight
+          ../../modules/desktop/noctalia-steam-theme.nix
         ];
 
         # HM core now ships its own programs.noctalia module (as the directory
