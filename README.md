@@ -3,7 +3,7 @@
 Flake-based NixOS configuration for a Flatpak-first, bluefin-like Noctalia desktop:
 
 - **Desktop**: [Noctalia v5](https://noctalia.dev/) + [Sway](https://swaywm.org) (Wayland compositor) with **ly** as the display manager — the lightweight DE stack (`modules/desktop/noctalia.nix` + `modules/desktop/sway.nix`).
-- **Theming**: Noctalia's builtin templates own app theming (foot, sway, GTK palette); gowall for wallpaper recoloring, see `modules/extras/theming.nix`.
+- **Theming**: Noctalia's builtin templates own app theming (foot, sway, GTK palette); gowall for wallpaper recoloring lives user-side in the home-manager repo (`modules/theming-tools.nix`).
 - **Apps**: declarative Flatpaks (see `modules/flatpak/`), GNOME core apps disabled; Some apps (Browsers, steam) are native due to various reasons (browser sandboxes behave better native, gaming packages sometimes perform better native. Steam needs native for Millenium if theming is enabled)
 - **Kernel**: nixpkgs kernel by default (`linuxPackages_latest`),
   with a per-host `latest` | `lts` fallback
@@ -14,14 +14,19 @@ CLI/dev applications are considered a per user concern (unless necessary for the
 
 ## Layout
 
-- `hosts/<name>/` — per-machine entrypoint (hostname, user, flatpaks, kernel, hardware)
+- `hosts/<name>/` — per-machine entrypoint (hardware identity, hostname, LUKS
+  swap UUID, CPU microcode, display output, GPU-specific services)
+- `modules/host-common.nix` — everything shared by the graphical desktop hosts
+  (module imports, the HM user wiring, gaming/theme/power enables,
+  auto-upgrade/secure-boot); host files keep only hardware specifics
 - `modules/base.nix` — shared core every host imports (core modules + defaults)
 - `modules/core/` — cross-host system modules (`system`, `kernel`, `perf`,
   `nix`, `users`, `hardening`, `maintenance`, `podman`, `secure-boot`)
 - `modules/desktop/` — shared desktop plumbing (`modules/desktop/default.nix`)
   plus the session stack modules: `noctalia.nix` + `sway.nix`
-- `modules/flatpak/` — declarative flatpaks, split into toggle-able sets
-- `modules/extras/` — optional host extras (theming)
+- `modules/flatpak/` — declarative **baseline** flatpaks
+  (`modules/flatpak/system.nix`); user-facing flatpaks live in home-manager
+- `modules/extras/` — optional host extras (tuned)
 - `quadlets/` — example podman quadlet files (system + rootless user templates)
 
 ## Host composition
@@ -35,9 +40,13 @@ CLI/dev applications are considered a per user concern (unless necessary for the
   `modules/desktop/sway.nix`. Noctalia owns app theming and the shell; Sway is
   the compositor.
 
-So `hosts/home` imports base + desktop + `noctalia.nix` + `sway.nix`. Per-host
-extras (flatpak sets, gaming, theming, secure-boot, ...) are imported and
-enabled directly in the host file.
+So `hosts/home` and `hosts/laptop` import `modules/host-common.nix` (base +
+desktop + the session stack + gaming/power/secure-boot plus the home-manager
+user wiring), then add only their hardware-specific tail.
+
+Noctalia's settings (bar, widgets, idle, session actions, app-theming
+templates) are **not** set here — they live in the home-manager repo
+(`modules/noctalia.nix`). The palette choice stays a live GUI setting.
 
 ## Kernel selection
 
@@ -76,22 +85,33 @@ the rebuild.
 
 ## Flatpaks
 
-Flatpaks are declarative and split into sets, so a host can include exactly what
-it needs:
+The **system** side ships only the "normie" baseline — the apps a normal
+distribution includes out of the box (GNOME core apps, mpv, the Bazaar app
+store, Flatseal/Warehouse/Ignition, browser/vpn support, and the GTK theme
+extensions):
 
 ```nix
-modules.flatpak.enable = true;
-modules.flatpak.base.enable = true;        # essential desktop apps
-modules.flatpak.gaming.enable = true;      # Proton management, emulators, ...
-modules.flatpak.multimedia.enable = true;  # Stremio, etc
+modules.flatpak.enable = true;         # the flatpak daemon
+modules.flatpak.system.enable = true;  # baseline set (modules/flatpak/system.nix)
 ```
 
-The sets live in `modules/flatpak/{base,gaming,multimedia}.nix`. To skip gaming
-on a workstation host, just don't import `gaming.nix` (or set
-`modules.flatpak.gaming.enable = false`).
+**User-facing / opinionated** Flatpaks (graphics, media, gaming, misc GUI
+apps) are declared per-user in the home-manager repo
+(`modules/flatpak.nix`, `home.bundles.flatpak.*`) and installed with
+`flatpak --user`, so they follow the person rather than the machine.
 
 Declarative installs are handled by [nix-flatpak](https://github.com/gmodena/nix-flatpak). Application IDs
 are installed from Flathub by default.
+
+## System vs. user split
+
+The system carries what is needed to boot, log in, drive hardware and provide
+the session (compositor, display manager, portals, pipewire, drivers, keyring,
+polkit, podman, TuneD, secure-boot, kernel), plus OS-integrated apps. Everything
+that is an opinionated personal preference — user-facing Flatpaks, Noctalia
+settings, palette files, Sway keybinds, GTK/fonts, CLI batteries, theming
+tooling — lives in the home-manager repo. This keeps the machine-level config
+portable to a non-NixOS image while the user layer rides along.
 
 
 ## Session stack
@@ -100,10 +120,11 @@ The desktop is ly (display manager) + Sway (Wayland compositor) + Noctalia v5
 (shell). Noctalia's builtin templates own app theming; there is no other
 session stack.
 
-Sway's keybinds/autostart/output live in the dotfiles repo
-(`modules/sway.nix`, gated on the dotfiles' `home.modules.desktop.enable` flag); the
-NixOS-side `modules/desktop/sway.nix` only handles the package, portals and
-session env (including the Vulkan renderer used for HDR).
+Sway's keybinds/autostart and the host's output block live in the dotfiles
+repo (`modules/sway.nix`, gated on the dotfiles' `home.modules.desktop.enable`
+flag); the NixOS-side `modules/desktop/sway.nix` only handles the package,
+portals and session env (including the Vulkan renderer used for HDR). Noctalia
+settings live in the dotfiles' `modules/noctalia.nix`.
 
 
 ## Apply

@@ -6,24 +6,13 @@
   ...
 }:
 
+# Desktop/workstation host. Shared system + user config lives in
+# modules/host-common.nix; this file carries hardware identity and the
+# desktop-specific GPU/display bits.
 {
   imports = [
     ./hardware-configuration.nix
-    ../../modules/base.nix
-    ../../modules/desktop/default.nix
-    ../../modules/desktop/noctalia.nix
-    ../../modules/desktop/sway.nix
-    ../../modules/core/podman.nix
-    ../../modules/flatpak/base.nix
-    ../../modules/flatpak/gaming.nix
-    ../../modules/flatpak/multimedia.nix
-    ../../modules/extras/theming.nix
-    ../../modules/extras/tuned.nix
-    ../../modules/gaming/game-performance.nix
-    ../../modules/gaming/steam.nix
-    ../../modules/gaming/wine.nix
-    ../../modules/core/secure-boot.nix
-    inputs.home-manager.nixosModules.home-manager
+    ../../modules/host-common.nix
   ];
 
   networking.hostName = "nixos";
@@ -36,235 +25,21 @@
   boot.initrd.luks.devices."luks-cef99b37-a347-4432-be60-8d04312cf661".device =
     "/dev/disk/by-uuid/cef99b37-a347-4432-be60-8d04312cf661";
 
-  # ntsync
-  # Load the ntsync kernel module at boot
-  boot.kernelModules = [ "ntsync" ];
-
-  # Let desktop users actually open /dev/ntsync
-  services.udev.extraRules = ''
-    KERNEL=="ntsync", TAG+="uaccess"
-  '';
-
-  modules.users.primary = "gooze";
-
-  # Pin the UID to the account the graphical installer created (first normal
-  # user = 1000). Without this, renaming `primary` would silently create a new
-  # uid and orphan the existing home + keyring.
-  modules.users.uid = 1000;
-
-  # Home dotfiles (the GooseRooster/home-manager repo). hmModules.default
-  # bundles home.nix (shared modules + XDG plumbing); this host sets the
-  # home.modules.* feature flags itself.
-  home-manager = {
-    # Back up (instead of erroring on) pre-existing files when a foreign
-    # standalone generation previously owned overlapping paths.
-    backupFileExtension = "hm-backup";
-
-    users.gooze =
-      { osConfig, lib, pkgs, ... }:
-      let
-        # Mini EQ autostart is a startup race: the Background portal
-        # (xdg-desktop-portal-gnome) drops
-        # ~/.config/autostart/io.github.bhack.mini-eq.desktop, GNOME's systemd
-        # user session turns that into a transient app-*@autostart.service unit
-        # (systemd-xdg-autostart-generator), and the unit starts with the
-        # session — i.e. before wireplumber has published the default sink.
-        # mini-eq's --auto-route then errors ("output sink cannot be a Mini EQ
-        # virtual sink") and exits. Drop-ins also apply to generator-produced
-        # units, so gate the (unchanged) ExecStart on a real default sink below.
-        miniEqSinkWait = pkgs.writeShellScript "mini-eq-wait-default-sink" ''
-          # Wait (max 60s) until pactl reports a default sink that is NOT Mini
-          # EQ's own virtual filter-chain (mini_eq_sink), then let ExecStart
-          # run. On timeout, start anyway and let mini-eq fail loudly. Match
-          # on mini+eq, not just "mini" — the RØDE NT-USB Mini is a real sink.
-          pactl="${lib.getExe' pkgs.pulseaudio "pactl"}"
-          for _ in $(seq 1 60); do
-            sink="$("$pactl" info 2>/dev/null | sed -n 's/^Default Sink: //p' || true)"
-            lower="''${sink,,}"
-            if [[ -n "$lower" && "$lower" != *mini*eq* && "$lower" != *eq*mini* ]]; then
-              exit 0
-            fi
-            sleep 1
-          done
-        '';
-      in
-      {
-        imports = [
-          inputs.dotfiles.hmModules.default
-          inputs.noctalia.homeModules.default
-          inputs.zen-browser.homeModules.twilight
-          ../../modules/desktop/noctalia-steam-theme.nix
-        ];
-
-        # HM core now ships its own programs.noctalia module (as the directory
-        # modules/programs/noctalia/), whose options collide with the noctalia
-        # flake's home module imported above. Disable HM's copy; the noctalia
-        # flake's own `disabledModules = [ "programs/noctalia.nix" ]` misses it
-        # because HM moved it from that file to a directory.
-        disabledModules = [ "programs/noctalia" ];
-
-        # Zen Browser, native (browser sandboxes behave better native than
-        # flatpak). Default browser; Firefox stays installed as the backup.
-        # Launch as `zen-twilight`.
-        programs.zen-browser = {
-          enable = true;
-          setAsDefaultBrowser = true;
-
-          # Light de-bloat; keep Zen's own update checker disabled since the
-          # flake manages versions (twilight artifacts are pinned in flake.lock).
-          policies = {
-            DisableTelemetry = true;
-            DisableFirefoxStudies = true;
-            DisablePocket = true;
-            DontCheckDefaultBrowser = true;
-            DisableAppUpdate = true;
-          };
-        };
-
-        # Feature flags for the dotfiles modules
-        home.bundles.baseExtra.enable = true; # desktop extras (fonts, vscode, …)
-        home.modules.desktop.enable = true; # Sway/Noctalia session configs
-        home.modules.gaming.enable = true;
-        home.modules.theming.enable = true;
-        # Rootless podman socket + docker->podman alias (lazydocker/lazypodman).
-        home.modules.podmanAlias.enable = true;
-
-        # Noctalia v5 + Sway baseline settings.
-        programs.noctalia = {
-          # The shell itself is autostarted by Sway (`exec noctalia`); enable
-          # here just installs the config file.
-          enable = true;
-          settings = {
-            shell = {
-              # Noctalia's native polkit agent (security.polkit is enabled by
-              # the noctalia NixOS module).
-              polkit_agent = true;
-
-              # Screenshot output policy for screenshot-region/-fullscreen IPC
-              # (bound to Sway keybinds in the dotfiles sway module).
-              screenshot = {
-                directory = "~/Pictures/Screenshots";
-                save_to_file = true;
-                copy_to_clipboard = true;
-              };
-            };
-
-            # Lockscreen/notification daemons are built into Noctalia.
-            lockscreen.enabled = true;
-
-            # App theming via Noctalia's builtin templates: the rendered
-            # palettes land in writable files (~/.config/foot/themes/noctalia,
-            # ~/.config/sway/noctalia, ~/.config/gtk-{3,4}.0/noctalia.css). The
-            # template post-hooks would also edit foot's config / Sway's
-            # config, which are read-only HM symlinks — pre-seeded in the
-            # dotfiles so those edits become no-ops.
-            theme.templates = {
-              enable_builtin_templates = true;
-              builtin_ids = [
-                "foot"
-                "gtk3"
-                "gtk4"
-                "sway"
-              ];
-            };
-          };
-        };
-
-        # This host's display: Dell AW3423DWF QD-OLED ultrawide. VRR while
-        # fullscreen, HDR auto-activates on fullscreen surfaces with HDR
-        # metadata. HDR10 needs the Vulkan renderer (set in modules/desktop/
-        # sway.nix). The Sway config itself lives in the dotfiles sway module.
-        home.modules.sway.extraConfig = ''
-          output DP-3 mode 3440x1440@164.9Hz
-          output DP-3 adaptive_sync on
-          output DP-3 hdr on
-        '';
-
-        # nvim/yazi ship `Terminal=true` desktop entries (Exec=nvim/yazi). Override
-        # them here (these land in ~/.local/share/applications, above the system
-        # entries) so they launch through `termapp` instead
-        xdg.desktopEntries = {
-          nvim = {
-            name = "Neovim";
-            genericName = "Text Editor";
-            exec = "termapp nvim %F";
-            icon = "nvim";
-            terminal = false;
-            type = "Application";
-            categories = [
-              "Utility"
-              "TextEditor"
-              "Development"
-            ];
-            mimeType = [ "text/plain" ];
-          };
-          yazi = {
-            name = "Yazi File Manager";
-            exec = "termapp yazi %f";
-            icon = "yazi";
-            terminal = false;
-            type = "Application";
-            categories = [
-              "System"
-              "FileManager"
-              "FileTools"
-            ];
-            mimeType = [ "text/plain" ];
-          };
-        };
-
-        # systemd drop-in for the transient unit generated from mini-eq's
-        # ~/.config/autostart entry (rationale in miniEqSinkWait above). The
-        # directory name carries systemd's escaped form of the unit name.
-        xdg.configFile."systemd/user/app-io.github.bhack.mini\\x2deq@autostart.service.d/override.conf".text =
-          ''
-            [Service]
-            ExecStartPre=${miniEqSinkWait}
-          '';
-      };
-  };
-
-  modules.flatpak.enable = true;
-  modules.flatpak.base.enable = true;
-  modules.flatpak.gaming.enable = true;
-  modules.flatpak.multimedia.enable = true;
-
-  modules.theming.enable = true;
-
-  # Gaming host: 32-bit GL + VA-API/VDPAU extras for Steam/Wine.
-  modules.graphics.gaming = true;
-
-  # TuneD power profiles (incl. a custom "gaming" = latency-performance).
-  modules.tuned.enable = true;
-
-  # game-performance helper (TuneD profile + Night Light for Steam) on PATH,
-  # plus a flatpak-accessible copy in ~/.local/bin.
-  modules.gamePerformance.enable = true;
-
-  # Lightweight DE: ly (DM) + Sway (compositor) + Noctalia v5 (shell).
-
-  # Native Steam (Millennium-flavoured) instead of the Flatpak Steam.
-  modules.steam.enable = true;
-
-  # Native Wine + winetricks + Faugus Launcher instead of their Flatpaks.
-  modules.wine.enable = true;
-
   # LACT (GPU monitoring/overclocking) native with its system daemon; the GUI
   # manages /etc/lact/config.yaml itself (left unmanaged so the GUI can write).
   # AMD GPU: overdrive unlocks the OC/underclock controls in LACT.
   services.lact.enable = true;
   hardware.amdgpu.overdrive.enable = true;
 
-  # Firefox Developer Edition alongside regular Firefox for web dev work.
-  # Dev Edition keeps its own dedicated profile directory, so the two
-  # browsers never touch each other's state.
-  environment.systemPackages = [ pkgs.firefox-devedition ];
-
-  # Stage weekly upgrades in the bootloader (no live switch); reboot to apply.
-  modules.autoUpgrade.enable = true;
-  modules.autoUpgrade.flake = "github:GooseRooster/nixos-config#home";
-
-  modules.secureBoot.enable = true;
+  # This host's display: Dell AW3423DWF QD-OLED ultrawide. VRR while
+  # fullscreen, HDR auto-activates on fullscreen surfaces with HDR
+  # metadata. HDR10 needs the Vulkan renderer (set in modules/desktop/
+  # sway.nix). The Sway config itself lives in the dotfiles sway module.
+  home-manager.users.gooze.home.modules.sway.extraConfig = ''
+    output DP-3 mode 3440x1440@164.9Hz
+    output DP-3 adaptive_sync on
+    output DP-3 hdr on
+  '';
 
   system.stateVersion = "26.05";
 }

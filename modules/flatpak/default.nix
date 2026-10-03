@@ -11,38 +11,21 @@ in
   options.modules.flatpak = {
     enable = lib.mkEnableOption "declarative Flatpak management";
 
-    base = {
-      enable = lib.mkEnableOption "base Flatpaks";
+    # System-wide "normie" apps (GNOME core, media player, app store).
+    # User-facing/opinionated apps are declared per-user in the home-manager
+    # repo (modules/flatpak.nix), not here.
+    system = {
+      enable = lib.mkEnableOption "system-wide baseline Flatpaks";
       packages = lib.mkOption {
         type = lib.types.listOf lib.types.str;
         default = [ ];
-        description = "Flatpak application IDs in the base set.";
-      };
-    };
-
-    gaming = {
-      enable = lib.mkEnableOption "gaming Flatpaks";
-      packages = lib.mkOption {
-        type = lib.types.listOf lib.types.str;
-        default = [ ];
-        description = "Flatpak application IDs in the gaming set.";
-      };
-    };
-
-    multimedia = {
-      enable = lib.mkEnableOption "multimedia Flatpaks";
-      packages = lib.mkOption {
-        type = lib.types.listOf lib.types.str;
-        default = [ ];
-        description = "Flatpak application IDs in the multimedia set.";
+        description = "Flatpak application IDs in the system baseline set.";
       };
     };
   };
 
   config = lib.mkIf cfg.enable {
     services.flatpak.enable = true;
-    services.flatpak.packages =
-      lib.concatLists (lib.map (c: lib.optionals c.enable c.packages)
-        [ cfg.base cfg.gaming cfg.multimedia ]);
+    services.flatpak.packages = lib.optionals cfg.system.enable cfg.system.packages;
   };
 }

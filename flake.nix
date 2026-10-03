@@ -29,6 +29,7 @@
     dotfiles.url = "github:GooseRooster/home-manager";
     dotfiles.inputs.home-manager.follows = "home-manager";
     dotfiles.inputs.nixpkgs.follows = "nixpkgs";
+    dotfiles.inputs.nix-flatpak.follows = "nix-flatpak";
 
     # Steam skin that makes the client look native (replaces Millennium, see
     # modules/gaming/steam.nix). Pinned as flake = false:
