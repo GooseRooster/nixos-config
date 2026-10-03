@@ -36,16 +36,19 @@
         "home-manager": [
           "home-manager"
         ],
+        "nix-flatpak": [
+          "nix-flatpak"
+        ],
         "nixpkgs": [
           "nixpkgs"
         ]
       },
       "locked": {
-        "lastModified": 1790971814,
-        "narHash": "sha256-tHgadQzLGvw8qA2ykXOfOUKAflCuuBdy3WlKhr4MME0=",
+        "lastModified": 1791031806,
+        "narHash": "sha256-6CQF7hdA9gBHT+7in+BRWW45qiMhjBOGOHCxi0gM1xc=",
         "owner": "GooseRooster",
         "repo": "home-manager",
-        "rev": "a955eef87bc229a48e823c46b2c3298c01ae902c",
+        "rev": "8d5e75ad8ca8454b98f8dc848109374a67cd9b55",
         "type": "github"
       },
       "original": {
