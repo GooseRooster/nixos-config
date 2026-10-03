@@ -1,6 +1,6 @@
 { lib, ... }:
 
-# System-wide "normie" Flatpaks: the kind of apps a normal distribution
+# System-wide Flatpaks: the kind of apps a normal distribution
 # ships out of the box (GNOME core apps, media player, app store, browser
 # support, theme extensions). These are considered part of the baseline
 # machine rather than a user preference, so they stay on the system side and
@@ -22,7 +22,7 @@
     "org.gnome.Calculator"
     "org.gnome.Calendar"
     "org.gnome.Characters"
-    "org.gnome.Clocks"
+    "org.gnome.clocks"
     "org.gnome.Weather"
     "org.gnome.Maps"
     "org.gnome.Papers"
