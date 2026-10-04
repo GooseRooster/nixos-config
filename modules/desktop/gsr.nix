@@ -188,23 +188,26 @@ let
         "''${src[@]}" -c mp4 -f 60 -q very_high -cr full -cursor yes \
         "''${audio[@]}" -o "$file" </dev/null >"$log" 2>&1 &
 
-      # Give GSR a moment to pass the KMS/encoder handshake. If it exits without
-      # starting, surface the log instead of failing silently.
+      # Only report success once GSR is genuinely capturing. GSR logs
+      # "update fps" once frames are flowing through the encoder, whereas a
+      # failed startup (e.g. no VA-API driver) logs "gsr error" and exits
+      # within a fraction of a second. The old check trusted liveness the
+      # instant the process appeared, so it reported "started" for a recorder
+      # that died moments later, then deleted the log on stop.
       started=0
       for _ in $(seq 1 40); do
-        if is_recording; then
+        is_recording || break
+        if grep -q 'update fps' "$log" 2>/dev/null; then
           started=1
-          break
-        fi
-        if grep -q 'gsr error' "$log" 2>/dev/null; then
           break
         fi
         sleep 0.1
       done
 
-      # A non-fatal "gsr error" line can appear during startup (e.g. global
-      # shortcuts); trust the process check before declaring failure.
-      if [ "$started" = 0 ] && is_recording; then
+      # Fallback for a recorder that is alive past the handshake window but
+      # has not emitted a stats line yet, as long as it logged no error.
+      if [ "$started" = 0 ] && is_recording \
+        && ! grep -q 'gsr error' "$log" 2>/dev/null; then
         started=1
       fi
 
