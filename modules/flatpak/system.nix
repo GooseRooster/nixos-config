@@ -21,6 +21,9 @@
     # Screen recorder
     "com.dec05eba.gpu_screen_recorder"
 
+    # Screenshot editor and annotations.
+    "be.alexandervanhee.gradia"
+
     # GNOME core apps.
     "org.gnome.Calculator"
     "org.gnome.Calendar"
@@ -45,14 +48,14 @@
     "org.gnome.DejaDup"
     "org.gnome.seahorse.Application"
 
-    # Messaging / VPN.
+    # Messaging
     "org.mozilla.thunderbird_esr"
-    "com.protonvpn.www"
 
-    # Flatpak + autostart management (system tooling).
+    # appimage + Flatpak + autostart management (system tooling).
     "com.github.tchx84.Flatseal"
     "io.github.flattool.Warehouse"
     "io.github.flattool.Ignition"
+    "it.mijorus.gearlever"
 
     # GTK theme extensions: sandboxed GTK3 apps can't see host themes, so the
     # adw-gtk3 theme must be installed into flatpak land for them (Boxes,

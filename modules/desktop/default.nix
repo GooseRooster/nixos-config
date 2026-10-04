@@ -8,6 +8,7 @@
     ./apps.nix
     ./terminal.nix
     ./graphics.nix
+    ./gsr.nix
     ./portals.nix
     ./pipewire.nix
     ./keyring.nix

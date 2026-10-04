@@ -47,6 +47,26 @@
     ];
   };
 
+  # System-wide base Sway config. This is the "bare system" default: a
+  # working noctalia desktop for any user without their own
+  # ~/.config/sway/config (a user config, e.g. the dotfiles HM module, wins).
+  # mkForce replaces the stock sway default, which references wmenu/foot we
+  # don't ship and has no noctalia bindings.
+  environment.etc."sway/config" = lib.mkForce {
+    source = ./sway-base.conf;
+  };
+
+  # Seed ~/.config/sway/config for users without one (a bare install, or a fork
+  # without the dotfiles HM config). Noctalia's sway template writes that path
+  # only when it is absent, which would then shadow /etc/sway/config; creating
+  # the symlink up front makes the template's append a no-op and keeps the base
+  # reachable. `L` (no `+`) only creates when nothing exists yet, so a
+  # Home-Manager-owned config is left untouched.
+  systemd.user.tmpfiles.rules = [
+    "d %h/.config/sway 0755 - - -"
+    "L %h/.config/sway/config - - - - /etc/sway/config"
+  ];
+
   # Removable-media handling. A bare Sway session doesn't get udisks2 + gvfs
   # implicitly, so enable the udisks2 D-Bus service (polkit is already on via
   # noctalia.nix) and let udiskie mount/unmount hotplugged drives
