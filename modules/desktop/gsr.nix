@@ -54,8 +54,21 @@ let
           ;;
       esac
 
-      flatpak run --command=gpu-screen-recorder ${gsrApp} \
-        "''${src[@]}" -o "$file"
+      # Capture stderr so a failed run can report the real reason. The wrapper
+      # is `set -e`, which would otherwise abort before notifying the user.
+      if ! err="$(flatpak run --command=gpu-screen-recorder ${gsrApp} \
+        "''${src[@]}" -o "$file" 2>&1 >/dev/null)"; then
+        rm -f "$file"
+        notify-send -a "Screenshot" -u critical "Screenshot failed" \
+          "''${err:-GPU Screen Recorder returned an error}"
+        exit 1
+      fi
+
+      if [ ! -s "$file" ]; then
+        notify-send -a "Screenshot" -u critical "Screenshot failed" \
+          "No image was written to $file"
+        exit 1
+      fi
 
       case "$action" in
         clip)
@@ -83,6 +96,7 @@ let
       slurp
       libnotify
       coreutils
+      gnugrep
       procps
       util-linux
       flatpak
@@ -118,7 +132,7 @@ let
 
         file=""
         [ -f "$state" ] && file="$(cat "$state")"
-        rm -f "$state"
+        rm -f "$state" "$state.log"
 
         if [ -n "$file" ]; then
           notify-send -a "Recorder" -i "${gsrApp}" \
@@ -159,15 +173,46 @@ let
       dir="$HOME/Videos"
       mkdir -p "$dir"
       file="$dir/Video_$(date +%Y-%m-%d_%H-%M-%S).mp4"
+      log="$state.log"
       printf '%s' "$file" > "$state"
 
       # setsid detaches it from sway's exec shell so the recording survives.
+      # Output is logged so a failed start can report the actual error.
       setsid flatpak run --command=gpu-screen-recorder ${gsrApp} \
         "''${src[@]}" -c mp4 -f 60 -q very_high -cr full -cursor yes \
-        "''${audio[@]}" -o "$file" </dev/null >/dev/null 2>&1 &
+        "''${audio[@]}" -o "$file" </dev/null >"$log" 2>&1 &
 
-      notify-send -a "Recorder" -i "${gsrApp}" \
-        "Recording started" "$(basename "$file")"
+      # Give GSR a moment to pass the KMS/encoder handshake. If it exits without
+      # starting, surface the log instead of failing silently.
+      started=0
+      for _ in $(seq 1 40); do
+        if is_recording; then
+          started=1
+          break
+        fi
+        if grep -q 'gsr error' "$log" 2>/dev/null; then
+          break
+        fi
+        sleep 0.1
+      done
+
+      # A non-fatal "gsr error" line can appear during startup (e.g. global
+      # shortcuts); trust the process check before declaring failure.
+      if [ "$started" = 0 ] && is_recording; then
+        started=1
+      fi
+
+      if [ "$started" = 1 ]; then
+        notify-send -a "Recorder" -i "${gsrApp}" \
+          "Recording started" "$(basename "$file")"
+        exit 0
+      fi
+
+      err="$(tail -n 8 "$log" 2>/dev/null)"
+      notify-send -a "Recorder" -u critical "Recording failed" \
+        "''${err:-GPU Screen Recorder failed to start}"
+      rm -f "$file" "$state" "$log"
+      exit 1
     '';
   };
 in

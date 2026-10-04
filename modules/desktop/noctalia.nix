@@ -55,8 +55,13 @@ in
   console.font = "${pkgs.terminus_font}/share/consolefonts/ter-u28n.psf.gz";
 
   # Session plumbing that a desktop environment would otherwise provide:
-  # keyring daemon, gcr SSH agent and polkit. Noctalia v5 registers its own
-  # polkit agent (shell.polkit_agent in the HM settings).
+  # keyring daemon, gcr SSH agent and polkit. Noctalia v5 ships its own polkit
+  # authentication agent, but it is off until enabled per user
+  # (shell.polkit_agent). Noctalia has no system-wide config layer — it resolves
+  # a single per-user dir and ignores /etc/xdg and XDG_CONFIG_DIRS — so a
+  # low-priority default is seeded into every user's config dir below. An agent
+  # is required for anything that calls pkexec (e.g. the GPU Screen Recorder
+  # flatpak's KMS helper) and is generally expected of a desktop session.
   #
   # Secret Service: gnome-keyring. The nixpkgs module installs the daemon,
   # the gcr prompter and the Secret portal, and wires PAM login auto-unlock
@@ -66,6 +71,21 @@ in
 
   security.polkit.enable = true;
   programs.dconf.enable = true; # gsettings persistence (Noctalia color-scheme sync)
+
+  # OS-wide Noctalia default: turn on its built-in polkit agent for every user
+  # without touching each user's own config. Noctalia merges every *.toml in
+  # ~/.config/noctalia alphabetically, so a "00-" file is a low-priority
+  # default: a user's config.toml and the app-managed settings.toml still win.
+  # `L` seeds each user's file on login only when nothing is there yet.
+  environment.etc."noctalia/00-nixos-defaults.toml".text = ''
+    [shell]
+    polkit_agent = true
+  '';
+
+  systemd.user.tmpfiles.rules = [
+    "d %h/.config/noctalia 0755 - - -"
+    "L %h/.config/noctalia/00-nixos-defaults.toml - - - - /etc/noctalia/00-nixos-defaults.toml"
+  ];
 
   # Noctalia's GTK template pairs its rendered libadwaita-style
   # noctalia.css with the adw-gtk3 theme (GTK3 doesn't consume the libadwaita
