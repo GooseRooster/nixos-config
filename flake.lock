@@ -44,11 +44,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1791111928,
-        "narHash": "sha256-f++5l8nj1zfBqBpv9hoYpa6wIwTdlI8ZNKAmbzSEk94=",
+        "lastModified": 1791113879,
+        "narHash": "sha256-FiCWjjVn0EwY5scnBov40BEuSlJumXVrIwNXoqO5p0E=",
         "owner": "GooseRooster",
         "repo": "home-manager",
-        "rev": "9e5b198db60380ce4fb691e7e8b4bc604658e068",
+        "rev": "b54f8ee58c1d5530cc8bd7d570a7848b255a3680",
         "type": "github"
       },
       "original": {
