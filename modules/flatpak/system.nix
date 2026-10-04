@@ -18,6 +18,9 @@
     "io.mpv.Mpv"
     "io.github.kolunmi.Bazaar"
 
+    # Screen recorder
+    "com.dec05eba.gpu_screen_recorder"
+
     # GNOME core apps.
     "org.gnome.Calculator"
     "org.gnome.Calendar"
