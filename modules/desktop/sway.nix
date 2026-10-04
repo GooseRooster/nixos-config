@@ -38,6 +38,7 @@
     extraPackages = with pkgs; [
       autotiling
       brightnessctl
+      fuzzel # screen-share source chooser for xdg-desktop-portal-wlr
       grim
       playerctl
       slurp
@@ -67,6 +68,18 @@
     "org.freedesktop.impl.portal.Background" = [ "gnome" ];
     "org.freedesktop.impl.portal.GlobalShortcuts" = [ "gnome" ];
     "org.freedesktop.impl.portal.Secret" = [ "gnome-keyring" ];
+  };
+
+  # Screen-sharing source chooser for xdg-desktop-portal-wlr. The NixOS module
+  # generates the config and forces --config=<it>, so a user-level
+  # ~/.config/xdg-desktop-portal-wlr/config is ignored. Browsers request
+  # monitor+window (kAnyScreenContent), which makes xdpw skip its slurp-only
+  # fallback and require a dmenu-style chooser; without one the share fails
+  # ("no output found"). Use an absolute fuzzel path because the service's
+  # systemd PATH does not include the user profile.
+  xdg.portal.wlr.settings.screencast = {
+    chooser_type = "dmenu";
+    chooser_cmd = "${pkgs.fuzzel}/bin/fuzzel -d -l 10 -p 'Select a source to share:'";
   };
 
   # Sway has no session manager, so nothing starts the XDG autostart units
