@@ -1,15 +1,20 @@
 {
+  config,
   pkgs,
   ...
 }:
 
-# GPU Screen Recorder plumbing, owned by the "distro" layer because the
-# recorder is a *system* Flatpak (modules/flatpak/system.nix). Two commands:
+# GPU Screen Recorder plumbing. The recorder is the native nixpkgs package,
+# enabled below via programs.gpu-screen-recorder so nixpkgs generates a setcap
+# wrapper for gsr-kms-server (cap_sys_admin+ep). That capability is what lets
+# monitor and region capture reach KMS without a root/polkit prompt; the
+# Flatpak route has to prompt once because a sandbox can't carry the
+# capability. Two commands:
 #
 #   gsr-shot [region|full] [clip|edit]
-#     screenshot via the GSR flatpak (HDR-correct, unlike grim); clip copies
-#     the PNG to the clipboard + notifies, edit hands it to Gradia when that
-#     flatpak is present.
+#     screenshot via GSR (HDR-correct, unlike grim); clip copies the PNG to the
+#     clipboard + notifies, edit hands it to Gradia when that flatpak is
+#     present.
 #
 #   gsr-rec [--mic] <screen|region|stop>
 #     screen recording, detached; stop SIGINTs the running recorder.
@@ -19,7 +24,7 @@
 # module. Scripts are at the system level so a bare install (or a fork without
 # the user's Home-Manager config) still has working screenshots/recording.
 let
-  gsrApp = "com.dec05eba.gpu_screen_recorder";
+  gsr = config.programs.gpu-screen-recorder.package;
 
   gsr-shot = pkgs.writeShellApplication {
     name = "gsr-shot";
@@ -29,6 +34,7 @@ let
       libnotify
       coreutils
       flatpak
+      gsr
     ];
     text = ''
       mode="''${1:-region}"    # region | full
@@ -56,7 +62,7 @@ let
 
       # Capture stderr so a failed run can report the real reason. The wrapper
       # is `set -e`, which would otherwise abort before notifying the user.
-      if ! err="$(flatpak run --command=gpu-screen-recorder ${gsrApp} \
+      if ! err="$(gpu-screen-recorder \
         "''${src[@]}" -o "$file" 2>&1 >/dev/null)"; then
         rm -f "$file"
         notify-send -a "Screenshot" -u critical "Screenshot failed" \
@@ -99,7 +105,7 @@ let
       gnugrep
       procps
       util-linux
-      flatpak
+      gsr
     ];
     text = ''
       state="''${XDG_RUNTIME_DIR:-/tmp}/gsr-rec.state"
@@ -135,7 +141,7 @@ let
         rm -f "$state" "$state.log"
 
         if [ -n "$file" ]; then
-          notify-send -a "Recorder" -i "${gsrApp}" \
+          notify-send -a "Recorder" -i camera-video \
             "Recording saved" "$(basename "$file")"
         else
           notify-send -a "Recorder" "Recording stopped"
@@ -178,7 +184,7 @@ let
 
       # setsid detaches it from sway's exec shell so the recording survives.
       # Output is logged so a failed start can report the actual error.
-      setsid flatpak run --command=gpu-screen-recorder ${gsrApp} \
+      setsid gpu-screen-recorder \
         "''${src[@]}" -c mp4 -f 60 -q very_high -cr full -cursor yes \
         "''${audio[@]}" -o "$file" </dev/null >"$log" 2>&1 &
 
@@ -203,7 +209,7 @@ let
       fi
 
       if [ "$started" = 1 ]; then
-        notify-send -a "Recorder" -i "${gsrApp}" \
+        notify-send -a "Recorder" -i camera-video \
           "Recording started" "$(basename "$file")"
         exit 0
       fi
@@ -217,6 +223,8 @@ let
   };
 in
 {
+  programs.gpu-screen-recorder.enable = true;
+
   environment.systemPackages = [
     gsr-shot
     gsr-rec

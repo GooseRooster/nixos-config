@@ -18,9 +18,6 @@
     "io.mpv.Mpv"
     "io.github.kolunmi.Bazaar"
 
-    # Screen recorder
-    "com.dec05eba.gpu_screen_recorder"
-
     # Screenshot editor and annotations.
     "be.alexandervanhee.gradia"
 

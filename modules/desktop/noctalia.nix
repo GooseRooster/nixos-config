@@ -60,8 +60,8 @@ in
   # (shell.polkit_agent). Noctalia has no system-wide config layer — it resolves
   # a single per-user dir and ignores /etc/xdg and XDG_CONFIG_DIRS — so a
   # low-priority default is seeded into every user's config dir below. An agent
-  # is required for anything that calls pkexec (e.g. the GPU Screen Recorder
-  # flatpak's KMS helper) and is generally expected of a desktop session.
+  # is required for anything that calls pkexec and is generally expected of a
+  # desktop session.
   #
   # Secret Service: gnome-keyring. The nixpkgs module installs the daemon,
   # the gcr prompter and the Secret portal, and wires PAM login auto-unlock
