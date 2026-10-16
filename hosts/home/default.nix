@@ -36,9 +36,9 @@
   # metadata. HDR10 needs the Vulkan renderer (set in modules/desktop/
   # sway.nix). The Sway config itself lives in the dotfiles sway module.
   home-manager.users.gooze.home.modules.sway.extraConfig = ''
-    output DP-3 mode 3440x1440@164.9Hz
-    output DP-3 adaptive_sync on
-    output DP-3 hdr on
+    output DP-2 mode 3440x1440@164.9Hz
+    output DP-2 adaptive_sync on
+    output DP-2 hdr on
   '';
 
   system.stateVersion = "26.05";
